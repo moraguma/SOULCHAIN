@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/01_LOOP_ROLLING_SLEEVES.ogg-a7364d249605a7a70f2c2b01edd0f8b6.oggstr"
+
+[deps]
+
+source_file="res://resources/sounds/01_LOOP_ROLLING_SLEEVES.ogg"
+dest_files=[ "res://.import/01_LOOP_ROLLING_SLEEVES.ogg-a7364d249605a7a70f2c2b01edd0f8b6.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0

@@ -1,0 +1,50 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://LevelBase.gd" type="Script" id=1]
+[ext_resource path="res://resources/tilemaps/AshWalls.tres" type="TileSet" id=2]
+[ext_resource path="res://resources/tilemaps/AshSpikes.tres" type="TileSet" id=3]
+[ext_resource path="res://resources/tilemaps/Ash.tres" type="TileSet" id=4]
+[ext_resource path="res://scenes/entities/TransitionArea.tscn" type="PackedScene" id=5]
+[ext_resource path="res://scenes/scripts/TileMapTiles.gd" type="Script" id=6]
+[ext_resource path="res://scenes/entities/Player.tscn" type="PackedScene" id=8]
+
+[node name="Base" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="Tiles" type="TileMap" parent="."]
+z_index = 6
+z_as_relative = false
+tile_set = ExtResource( 4 )
+cell_size = Vector2( 32, 32 )
+collision_layer = 3
+collision_mask = 0
+format = 1
+tile_data = PoolIntArray( -1048576, 2, 196609, -1048575, 2, 196610, -1048574, 2, 196610, -1048573, 2, 196610, -1048572, 2, 196610, -1048571, 2, 196610, -1048570, 2, 196610, -1048569, 2, 196610, -1048568, 2, 196610, -1048567, 2, 196610, -1048566, 2, 196610, -1048565, 2, 196610, -1048564, 2, 196610, -1048563, 2, 196610, -1048562, 2, 196610, -1048561, 2, 196610, -1048560, 2, 196610, -1048559, 2, 196610, -1048558, 2, 196610, -1048557, 2, 196610, -1048556, 2, 196610, -1048555, 2, 196610, -1048554, 2, 196610, -1048553, 2, 196610, -1048552, 2, 196610, -1048551, 2, 196610, -1048550, 2, 196610, -1048549, 2, 196610, -1048548, 2, 196610, -1048547, 2, 196610, -1048546, 2, 196610, -1048545, 2, 196610, -1048544, 2, 196610, -1048543, 2, 196610, -1048542, 2, 196610, -1048541, 2, 196610, -1048540, 2, 196610, -1048539, 2, 196610, -1048538, 2, 196610, -1048537, 2, 196610, -1048536, 2, 196610, -1048535, 2, 196610, -1048534, 2, 196610, -1048533, 2, 196610, -1048532, 2, 196610, -1048531, 2, 196610, -1048530, 2, 196610, -1048529, 2, 196610, -1048528, 2, 196610, -1048527, 2, 196610, -1048526, 2, 196610, -1048525, 2, 196610, -1048524, 2, 196610, -1048523, 2, 196610, -1048522, 2, 196610, -1048521, 2, 196610, -1048520, 2, 196610, -1048519, 2, 196610, -1048518, 2, 196610, -1048517, 2, 196610, -1048516, 2, 196611 )
+script = ExtResource( 6 )
+
+[node name="Walls" type="TileMap" parent="."]
+z_as_relative = false
+tile_set = ExtResource( 2 )
+cell_size = Vector2( 32, 32 )
+collision_layer = 0
+collision_mask = 2147483648
+format = 1
+
+[node name="Spikes" type="TileMap" parent="."]
+z_index = 1
+z_as_relative = false
+tile_set = ExtResource( 3 )
+cell_size = Vector2( 32, 32 )
+collision_layer = 4
+collision_mask = 0
+format = 1
+
+[node name="TransitionAreaLeft" parent="." instance=ExtResource( 5 )]
+position = Vector2( 0, 512 )
+placement = 1
+
+[node name="TransitionAreaRight" parent="." instance=ExtResource( 5 )]
+position = Vector2( 1920, 384 )
+
+[node name="Player" parent="." instance=ExtResource( 8 )]
+position = Vector2( 96, 928 )

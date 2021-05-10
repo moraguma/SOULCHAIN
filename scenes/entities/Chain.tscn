@@ -1,0 +1,8 @@
+[gd_scene format=2]
+
+[node name="Chain" type="RayCast2D"]
+z_index = 2
+z_as_relative = false
+enabled = true
+cast_to = Vector2( 0, 0 )
+collision_mask = 3

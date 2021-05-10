@@ -1,0 +1,717 @@
+[gd_scene load_steps=41 format=2]
+
+[ext_resource path="res://sprites/spritesheets/tinydeath.png" type="Texture" id=1]
+[ext_resource path="res://scenes/scripts/Player.gd" type="Script" id=2]
+[ext_resource path="res://scenes/scripts/PlayerRaycastController.gd" type="Script" id=3]
+[ext_resource path="res://scenes/entities/Hook.tscn" type="PackedScene" id=4]
+[ext_resource path="res://resources/sounds/footstep.wav" type="AudioStream" id=5]
+[ext_resource path="res://scenes/scripts/AnimationPlayer.gd" type="Script" id=6]
+[ext_resource path="res://resources/sounds/landing.wav" type="AudioStream" id=7]
+[ext_resource path="res://resources/sounds/burst.wav" type="AudioStream" id=8]
+[ext_resource path="res://resources/sounds/jump.wav" type="AudioStream" id=9]
+[ext_resource path="res://resources/sounds/death.wav" type="AudioStream" id=10]
+[ext_resource path="res://scenes/entities/visual/JumpParticles.tscn" type="PackedScene" id=11]
+[ext_resource path="res://scenes/entities/visual/Afterimage.tscn" type="PackedScene" id=12]
+[ext_resource path="res://scenes/scripts/Camera.gd" type="Script" id=13]
+[ext_resource path="res://scenes/entities/visual/BurstParticles.tscn" type="PackedScene" id=14]
+
+[sub_resource type="Animation" id=1]
+resource_name = "air"
+length = 0.1
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 18 ]
+}
+
+[sub_resource type="Animation" id=2]
+resource_name = "burst_diagonal_down"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 32, 33, 34, 35, 36, 37 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.6 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "idle" ],
+"method": "force_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=3]
+resource_name = "burst_diagonal_up"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 48, 49, 50, 51, 52, 53 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.6 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "idle" ],
+"method": "force_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=4]
+resource_name = "burst_forward"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 40, 41, 42, 43, 44, 45 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.6 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "idle" ],
+"method": "force_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=5]
+resource_name = "burst_up"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 56, 57, 58, 59, 60, 61 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.6 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "idle" ],
+"method": "force_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=6]
+resource_name = "dead"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.4 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 80, 81, 82, 83 ]
+}
+
+[sub_resource type="Animation" id=7]
+length = 0.3
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ 19, 20, 21 ]
+}
+
+[sub_resource type="Animation" id=8]
+resource_name = "husk_air"
+length = 0.1
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 106 ]
+}
+
+[sub_resource type="Animation" id=9]
+resource_name = "husk_fall"
+length = 0.3
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ 107, 108, 109 ]
+}
+
+[sub_resource type="Animation" id=10]
+resource_name = "husk_idle"
+length = 0.6
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 88, 89, 90, 91, 92, 93 ]
+}
+
+[sub_resource type="Animation" id=11]
+resource_name = "husk_jump"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 104 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.1 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "jump_loop" ],
+"method": "try_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=12]
+resource_name = "husk_jump_loop"
+length = 0.1
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 105 ]
+}
+
+[sub_resource type="Animation" id=13]
+resource_name = "husk_land"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ 110, 111 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.2 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "idle" ],
+"method": "force_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=14]
+resource_name = "husk_walk"
+length = 0.8
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 96, 97, 98, 99, 100, 101, 102, 103 ]
+}
+
+[sub_resource type="Animation" id=15]
+resource_name = "husk_wall_hit"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ 112, 113 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.2 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "husk_wall_slide" ],
+"method": "force_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=16]
+resource_name = "husk_wall_slide"
+length = 0.3
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ 120, 121, 122 ]
+}
+
+[sub_resource type="Animation" id=17]
+length = 0.6
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 0, 1, 2, 3, 4, 5 ]
+}
+
+[sub_resource type="Animation" id=18]
+length = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 16 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.1 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "jump_loop" ],
+"method": "try_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=19]
+resource_name = "jump_loop"
+length = 0.1
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 17 ]
+}
+
+[sub_resource type="Animation" id=20]
+length = 0.2
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ 22, 23 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.2 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "idle" ],
+"method": "force_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=21]
+length = 0.6
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 24, 25, 26, 27, 28, 29 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.3 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "idle" ],
+"method": "force_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=22]
+length = 0.8
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 8, 9, 10, 11, 12, 13, 14, 15 ]
+}
+
+[sub_resource type="Animation" id=23]
+length = 0.2
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ 64, 65 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("AnimationPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.2 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "wall_slide" ],
+"method": "force_play_animation"
+} ]
+}
+
+[sub_resource type="Animation" id=24]
+length = 0.3
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ 72, 73, 74 ]
+}
+
+[sub_resource type="CapsuleShape2D" id=25]
+radius = 4.0
+height = 6.0
+
+[sub_resource type="RectangleShape2D" id=26]
+extents = Vector2( 4, 3 )
+
+[node name="Player" type="KinematicBody2D"]
+z_index = 4
+z_as_relative = false
+collision_layer = 8
+collision_mask = 7
+script = ExtResource( 2 )
+Hook = ExtResource( 4 )
+JumpParticles = ExtResource( 11 )
+BurstParticles = ExtResource( 14 )
+Afterimage = ExtResource( 12 )
+
+[node name="Sprite" type="Sprite" parent="."]
+texture = ExtResource( 1 )
+vframes = 16
+hframes = 8
+frame = 122
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/air = SubResource( 1 )
+anims/burst_diagonal_down = SubResource( 2 )
+anims/burst_diagonal_up = SubResource( 3 )
+anims/burst_forward = SubResource( 4 )
+anims/burst_up = SubResource( 5 )
+anims/dead = SubResource( 6 )
+anims/fall = SubResource( 7 )
+anims/husk_air = SubResource( 8 )
+anims/husk_fall = SubResource( 9 )
+anims/husk_idle = SubResource( 10 )
+anims/husk_jump = SubResource( 11 )
+anims/husk_jump_loop = SubResource( 12 )
+anims/husk_land = SubResource( 13 )
+anims/husk_walk = SubResource( 14 )
+anims/husk_wall_hit = SubResource( 15 )
+anims/husk_wall_slide = SubResource( 16 )
+anims/idle = SubResource( 17 )
+anims/jump = SubResource( 18 )
+anims/jump_loop = SubResource( 19 )
+anims/land = SubResource( 20 )
+anims/spin = SubResource( 21 )
+anims/walk = SubResource( 22 )
+anims/wall_hit = SubResource( 23 )
+anims/wall_slide = SubResource( 24 )
+script = ExtResource( 6 )
+
+[node name="PhysicsHitbox" type="CollisionShape2D" parent="."]
+position = Vector2( 0, 1 )
+shape = SubResource( 25 )
+
+[node name="FeetHitbox" type="CollisionShape2D" parent="."]
+position = Vector2( 0, 5 )
+shape = SubResource( 26 )
+
+[node name="RaycastController" type="Node2D" parent="."]
+script = ExtResource( 3 )
+
+[node name="UpRight" type="RayCast2D" parent="RaycastController"]
+position = Vector2( 0, -6 )
+enabled = true
+cast_to = Vector2( 6, 0 )
+collision_mask = 3
+
+[node name="UpLeft" type="RayCast2D" parent="RaycastController"]
+position = Vector2( 0, -6 )
+enabled = true
+cast_to = Vector2( -6, 0 )
+collision_mask = 3
+
+[node name="DownRight" type="RayCast2D" parent="RaycastController"]
+position = Vector2( 0, 8 )
+enabled = true
+cast_to = Vector2( 6, 0 )
+collision_mask = 3
+
+[node name="DownLeft" type="RayCast2D" parent="RaycastController"]
+position = Vector2( 0, 8 )
+enabled = true
+cast_to = Vector2( -6, 0 )
+collision_mask = 3
+
+[node name="LeftFeet" type="RayCast2D" parent="RaycastController"]
+position = Vector2( -4, 8 )
+enabled = true
+cast_to = Vector2( 0, 1 )
+collision_mask = 3
+
+[node name="RightFeet" type="RayCast2D" parent="RaycastController"]
+position = Vector2( 4, 8 )
+enabled = true
+cast_to = Vector2( 0, 1 )
+collision_mask = 3
+
+[node name="TweenController" type="Node" parent="."]
+
+[node name="HAccelerationTween" type="Tween" parent="TweenController"]
+
+[node name="HSpeedTween" type="Tween" parent="TweenController"]
+
+[node name="GravityTween" type="Tween" parent="TweenController"]
+
+[node name="VSpeedTween" type="Tween" parent="TweenController"]
+
+[node name="TimerController" type="Node" parent="."]
+
+[node name="CoyoteTimeTimer" type="Timer" parent="TimerController"]
+process_mode = 0
+wait_time = 0.067
+one_shot = true
+
+[node name="LogJumpTimer" type="Timer" parent="TimerController"]
+process_mode = 0
+wait_time = 0.067
+one_shot = true
+
+[node name="AfterimageTimer" type="Timer" parent="TimerController"]
+wait_time = 0.05
+one_shot = true
+
+[node name="Camera" type="Camera2D" parent="."]
+current = true
+limit_left = 0
+limit_top = 0
+limit_right = 1920
+limit_bottom = 1080
+limit_smoothed = true
+drag_margin_h_enabled = true
+drag_margin_v_enabled = true
+smoothing_enabled = true
+drag_margin_left = 0.1
+drag_margin_top = 0.1
+drag_margin_right = 0.1
+drag_margin_bottom = 0.1
+script = ExtResource( 13 )
+
+[node name="DeathSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 10 )
+
+[node name="JumpSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 9 )
+
+[node name="BurstSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 8 )
+
+[node name="LandSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 7 )
+volume_db = 3.0
+
+[node name="WalkSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 5 )
+volume_db = -20.0
+[connection signal="timeout" from="TimerController/CoyoteTimeTimer" to="." method="end_coyote_time"]
+[connection signal="timeout" from="TimerController/LogJumpTimer" to="." method="unlog_jump"]

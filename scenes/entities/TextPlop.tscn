@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://resources/themes/Menu.tres" type="Theme" id=1]
+
+[node name="TextPlop" type="Label"]
+margin_right = 40.0
+margin_bottom = 14.0
+theme = ExtResource( 1 )
+text = "Oi!"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}

@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/01_LOOP_NOIR.ogg-3c97edb16ce6c7f6a8815b7d1aa57170.oggstr"
+
+[deps]
+
+source_file="res://resources/sounds/01_LOOP_NOIR.ogg"
+dest_files=[ "res://.import/01_LOOP_NOIR.ogg-3c97edb16ce6c7f6a8815b7d1aa57170.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0
