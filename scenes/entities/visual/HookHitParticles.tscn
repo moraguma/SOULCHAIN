@@ -14,6 +14,8 @@ orbit_velocity_random = 0.0
 damping = 20.0
 
 [node name="HookHitParticles" type="Particles2D"]
+z_index = 8
+z_as_relative = false
 emitting = false
 amount = 24
 one_shot = true

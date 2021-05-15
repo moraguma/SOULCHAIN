@@ -4,6 +4,7 @@ export (PackedScene) var Hook
 export (PackedScene) var JumpParticles
 export (PackedScene) var BurstParticles
 export (PackedScene) var Afterimage
+export (PackedScene) var DeathParticles
 
 # ------------------------------------------------
 # MOVEMENT CONSTANTS
@@ -54,7 +55,7 @@ const IMPULSE_JUMP_H_SPEED = 400
 # VERTICAL ---------------------
 # GRAVITY
 const GRAVITY = 0.09
-const HIGH_JUMP_GRAVITY = 0.03 
+const HIGH_JUMP_GRAVITY = 0.032
 const WALL_SLIDE_GRAVITY = 0.1
 const SWING_GRAVITY = 0.05
 
@@ -91,7 +92,7 @@ const WALL_JUMP_V_SPEED = 100
 const WALL_JUMP_IMPULSE_V_SPEED = 300
 const WALL_SPIN_JUMP_V_SPEED = 100
 const WALL_SPIN_JUMP_IMPULSE_V_SPEED = 200
-const IMPULSE_JUMP_V_SPEED = 130
+const IMPULSE_JUMP_V_SPEED = 120
 
 const MIN_IMPULSE_V_SPEED = 300
 const MIN_IMPULSE_H_SPEED = 250
@@ -113,14 +114,19 @@ const SMALL_VERTICAL_WALL_JUMP_MULTIPLIER = 0.5
 # ------------------------------------------------
 
 # ------------------------------------------------
-# ANIMATION CONSTANTS
+# VISUAL CONSTANTS
 
+const DEATH_DISTANCE = 16
 const TOTAL_AFTERIMAGES = 3
 const TURN_SPEED_MINIMUM = 2
 const AIR_SPEED_INTERVAL = 40
 const WALK_MIN_SPEED = 20
-const DEAD_TIME = 1.5
+const DEATH_EXPLODE_TIME = 0.4
+const DEATH_LINGER_TIME = 0.9
 const FEET_VECTOR = Vector2(0, 8)
+
+const PLAYER_LIGHT_MAX_ENERGY = 0.85
+const LIGHT_TRANSITION_TIME = 0.5
 # ------------------------------------------------
 
 # ------------------------------------------------
@@ -154,6 +160,12 @@ var bursting = false
 # ------------------------------------------------
 
 # ------------------------------------------------
+# VISUAL VARIABLES
+
+var light_enabled = false
+# ------------------------------------------------
+
+# ------------------------------------------------
 # NODES
 
 onready var parent = get_parent()
@@ -161,13 +173,15 @@ onready var raycast_controller = $RaycastController
 onready var sprite = $Sprite
 onready var animation_player = $AnimationPlayer
 onready var camera = $Camera
-var tilemap = null
+onready var player_light = $PlayerLight
+var tilemaps = null
 
 # TWEENS 
 onready var h_acceleration_tween = $TweenController/HAccelerationTween
 onready var h_speed_tween = $TweenController/HSpeedTween
 onready var gravity_tween = $TweenController/GravityTween
 onready var v_speed_tween = $TweenController/VSpeedTween
+onready var player_light_tween = $TweenController/PlayerLightTween
 
 # TIMERS 
 onready var coyote_time_timer = $TimerController/CoyoteTimeTimer
@@ -184,7 +198,7 @@ onready var death_sound = $DeathSound
 
 func _ready():
 	if parent.name == "Base":
-		tilemap = parent.get_node("Tiles")
+		tilemaps = parent.get_node("Tiles").get_children()
 		camera.limit_top = parent.min_y
 		camera.limit_left = parent.min_x
 		camera.limit_bottom = parent.max_y
@@ -197,16 +211,16 @@ func _physics_process(delta):
 		parent.back_to_menu()
 	
 	if not is_transitioning:
-		if Input.is_action_just_pressed("restart"):
-			death()
-		
 		if not is_dead:
+			if Input.is_action_just_pressed("restart"):
+				death(Vector2(0, 0))
+			
 			_movement_process(delta)
 			_animation_process()
 			
 			if parent.name != "Base":
 				if not parent.is_inside(position):
-					death()
+					death(Vector2(0, -3))
 	else:
 		if is_on_floor():
 			animation_player.try_play_animation("walk")
@@ -311,6 +325,10 @@ func _movement_process(delta):
 	if not has_hook:
 		hook_fixed = hook.is_fixed()
 		is_swinging = hook.player_is_tensioned()
+	
+	if on_floor and tilemaps != null:
+		for tilemap in tilemaps:
+			tilemap.rehook_tiles()
 	
 	if not can_jump and on_floor:
 		can_jump = true
@@ -497,6 +515,9 @@ func _movement_process(delta):
 			hook.position = position
 			hook.dir = hook_dir
 			parent.add_child(hook)
+			
+			if light_enabled:
+				hook.turn_on_light()
 		
 		else:
 			if hook.is_fixed():
@@ -507,7 +528,7 @@ func _movement_process(delta):
 				camera.add_trauma(camera.SHAKE_MEDIUM)
 				
 				hook.burst()
-				hook.start_return()
+				hook.start_burst_return()
 				
 				var burst_vector = hook.get_burst_dir() * BURST_SPEED
 				
@@ -561,11 +582,8 @@ func _movement_process(delta):
 		var collision = get_slide_collision(get_slide_count() - 1)
 		
 		if collision:
-			if collision.collider.get_collision_layer_bit(2):
-				death()
-	
-	if on_floor and tilemap != null:
-		tilemap.rehook_tiles()
+			if collision.collider.get_collision_layer_bit(1):
+				death(collision.normal)
 
 
 func _animation_process():
@@ -639,16 +657,47 @@ func get_shot(dir, pos):
 		animation_player.force_play_animation("burst_up")
 
 
+func turn_on_light():
+	player_light_tween.stop_all()
+	player_light_tween.interpolate_property(player_light, "energy", 0, PLAYER_LIGHT_MAX_ENERGY, LIGHT_TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	player_light_tween.start()
+	
+	light_enabled = true
+
+
+func turn_off_light():
+	player_light_tween.stop_all()
+	player_light_tween.interpolate_property(player_light, "energy", PLAYER_LIGHT_MAX_ENERGY, 0, LIGHT_TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	player_light_tween.start()
+	
+	light_enabled = false
+
+
 func update_tilemap():
-	tilemap = parent.get_tilemap()
+	tilemaps = parent.get_tilemaps()
 
 
-func death():
+func death(v):
 	death_sound.play()
+	camera.add_trauma(camera.SHAKE_SMALL)
 	
 	is_dead = true
 	animation_player.force_play_animation("dead")
 	
-	yield(get_tree().create_timer(DEAD_TIME), "timeout")
+	h_acceleration_tween.remove_all()
+	h_acceleration_tween.interpolate_property(self, "position", position, position + v * DEATH_DISTANCE, DEATH_EXPLODE_TIME, Tween.TRANS_EXPO, Tween.EASE_OUT)
+	h_acceleration_tween.start()
+	
+	yield(h_acceleration_tween, "tween_completed")
+	
+	camera.add_trauma(camera.SHAKE_BIG)
+	sprite.hide()
+	var death_particles = DeathParticles.instance()
+	death_particles.position = position
+	parent.add_child(death_particles)
+	
+	afterimage_timer.start(DEATH_LINGER_TIME)
+	
+	yield(afterimage_timer, "timeout")
 	
 	parent.respawn()

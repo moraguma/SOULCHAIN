@@ -2,18 +2,15 @@ extends Node2D
 
 export (PackedScene) var Player
 
-enum PLACEMENT {right, left}
+const TRANSITION_TIME = 0.5
 
-const TRANSITION_TIME = 0.4
-const CAMERA_TRANSITION_TIME = 0.4
-const VERTICAL_TOLLERANCE = 90
-
-const MUSIC_VOLUME = -10
-const MUSIC_TRANSITION_TIME = 2
+const BOTTOM_TOLLERANCE = 30
+const TOP_TOLLERANCE = 100
+const LEFT_TOLLERANCE = 30
+const RIGHT_TOLLERANCE = 30
 
 var total_deaths = 0
 
-var starting_position
 var current_area
 var respawn_position
 var player 
@@ -24,36 +21,31 @@ var sprite_flip_h
 onready var start_time = OS.get_ticks_msec()
 
 onready var tween = $Tween
-onready var camera_tween_up = $CameraTweenUp
-onready var camera_tween_right = $CameraTweenRight
-onready var camera_tween_down = $CameraTweenDown
-onready var camera_tween_left = $CameraTweenLeft
+onready var camera_x_tween = $CameraXTween
+onready var camera_y_tween = $CameraYTween
 
-onready var music_noir = $MusicNoir
-onready var music_sleeves = $MusicSleeves
-onready var tween_noir = $NoirTween
-onready var tween_sleeves = $SleevesTween
-
-func spawn(Transition, placement, music, starting_pos):
-	starting_position = starting_pos
+func initialize_player():
+	#TEMPORARY
 	
+	player.turn_on_light()
+
+func spawn(Transition, transition_code):
 	player = Player.instance()
 	sprite = player.get_node("Sprite")
 	camera = player.get_node("Camera")
 	
 	add_child(player)
 	
+	initialize_player()
+	
 	current_area = Transition.instance()
 	add_child(current_area)
 	current_area.initialize_transitions()
 	
-	match placement:
-		PLACEMENT.left:
-			respawn_position = current_area.get_node("TransitionAreaLeft").spawn_point
-			sprite_flip_h = false
-		PLACEMENT.right:
-			respawn_position = current_area.get_node("TransitionAreaRight").spawn_point
-			sprite_flip_h = true
+	var current_transition = current_area.get_node("Transitions").get_node("TransitionArea" + transition_code)
+	
+	respawn_position = current_area.position + current_transition.spawn_point
+	sprite_flip_h = current_transition.facing_right_on_respawn
 	
 	camera.limit_left = current_area.min_x
 	camera.limit_right = current_area.max_x
@@ -64,54 +56,69 @@ func spawn(Transition, placement, music, starting_pos):
 	sprite.flip_h = sprite_flip_h
 	
 	player.update_tilemap()
-	
-	match music:
-		"noir":
-			music_noir.volume_db = MUSIC_VOLUME
-			music_noir.play()
-		"sleeves":
-			music_sleeves.volume_db = MUSIC_VOLUME
-			music_sleeves.play()
 
-func transition(Transition, placement):
+func transition(Transition, transition_code, transition_area):
 	var past_area = current_area
 	current_area = Transition.instance()
 	
 	add_child(current_area)
 	
-	match placement:
-		PLACEMENT.left:
-			current_area.position = past_area.position + past_area.get_node("TransitionAreaLeft").position - current_area.get_node("TransitionAreaRight").position
-			
-			respawn_position = current_area.position + current_area.get_node("TransitionAreaRight").spawn_point
-			sprite_flip_h = true
-			
-			camera.limit_left = current_area.position[0] + current_area.min_x
-		PLACEMENT.right:
-			current_area.position = past_area.position + past_area.get_node("TransitionAreaRight").position - current_area.get_node("TransitionAreaLeft").position
-			
-			respawn_position = current_area.position + current_area.get_node("TransitionAreaLeft").spawn_point
-			sprite_flip_h = false
-			
-			camera.limit_right = current_area.position[0] + current_area.max_x
+	var new_transition_area = current_area.get_node("Transitions").get_node("TransitionArea" + transition_code)
+	current_area.position = past_area.position + transition_area.position - new_transition_area.position
+	respawn_position = current_area.position + new_transition_area.spawn_point
+	sprite_flip_h = transition_area.facing_right_on_respawn
+	
+	if past_area.position[1] > current_area.position[1]:
+		camera_y_tween.interpolate_property(camera, "limit_bottom", past_area.position[1] + 216, current_area.position[1] + current_area.max_y, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+		camera.limit_top = current_area.position[1] + current_area.min_y
+	else:
+		camera_y_tween.interpolate_property(camera, "limit_top", past_area.position[1] + past_area.max_y - 216, current_area.position[1] + current_area.min_y, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+		camera.limit_bottom = current_area.position[1] + current_area.max_y
+	
+	if past_area.position[0] > current_area.position[0]:
+		camera_x_tween.interpolate_property(camera, "limit_right", past_area.position[0] + 384, current_area.position[0] + current_area.max_x, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+		camera.limit_left = current_area.position[0] + current_area.min_x
+	else:
+		camera_x_tween.interpolate_property(camera, "limit_left", past_area.position[0] + past_area.max_x - 384, current_area.position[0] + current_area.min_x, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+		camera.limit_right = current_area.position[0] + current_area.max_x
 	
 	player.is_transitioning = true
-	tween.interpolate_property(player, "position", player.position, Vector2(respawn_position[0], player.position[1]), TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	camera_tween_up.interpolate_property(camera, "limit_top", camera.limit_top, current_area.position[1] + current_area.min_y, CAMERA_TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	camera_tween_right.interpolate_property(camera, "limit_right", camera.limit_right, current_area.position[0] + current_area.max_x, CAMERA_TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	camera_tween_down.interpolate_property(camera, "limit_bottom", camera.limit_bottom, current_area.position[1] + current_area.max_y, CAMERA_TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	camera_tween_left.interpolate_property(camera, "limit_left", camera.limit_left, current_area.position[0] + current_area.min_x, CAMERA_TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	
+	var new_player_position = player.position
+	if transition_area.is_horizontal:
+		if abs(transition_area.position[0] - past_area.min_x) < abs(transition_area.position[0] - past_area.max_x):
+			new_player_position += transition_area.transition_distance * Vector2(-1, 0)
+		else:
+			new_player_position += transition_area.transition_distance * Vector2(1, 0)
+	else:
+		if abs(transition_area.position[1] - past_area.min_y) < abs(transition_area.position[1] - past_area.max_y):
+			 new_player_position += transition_area.transition_distance * Vector2(0, -1)
+		else:
+			new_player_position += transition_area.transition_distance * Vector2(0, 1)
+	
+	tween.interpolate_property(player, "position", player.position, new_player_position, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+	
+	var old_drag_margin_left = camera.drag_margin_left
+	var old_drag_margin_right = camera.drag_margin_right
+	var old_drag_margin_top = camera.drag_margin_top
+	var old_drag_margin_bottom = camera.drag_margin_bottom
+	
+	camera.drag_margin_left = 1
+	camera.drag_margin_right = 1
+	camera.drag_margin_top = 1
+	camera.drag_margin_bottom = 1
 	
 	tween.start()
-	camera_tween_up.start()
-	camera_tween_right.start()
-	camera_tween_down.start()
-	camera_tween_left.start()
+	camera_x_tween.start()
+	camera_y_tween.start()
 	
-	tween.start()
-	
-	yield(get_tree().create_timer(TRANSITION_TIME), "timeout")
+	yield(tween, "tween_all_completed")
 	player.is_transitioning = false
+	
+	camera.drag_margin_left = old_drag_margin_left
+	camera.drag_margin_right = old_drag_margin_right
+	camera.drag_margin_top = old_drag_margin_top
+	camera.drag_margin_bottom = old_drag_margin_bottom
 	
 	past_area.queue_free()
 	current_area.initialize_transitions()
@@ -144,11 +151,14 @@ func respawn():
 	sprite.flip_h = sprite_flip_h
 	
 	add_child(player)
+	
+	initialize_player()
+	
 	player.update_tilemap()
 
 
-func get_tilemap():
-	return current_area.get_node("Tiles")
+func get_tilemaps():
+	return current_area.get_node("Tiles").get_children()
 
 
 func get_player():
@@ -156,7 +166,7 @@ func get_player():
 
 
 func is_inside(pos):
-	return pos[0] > camera.limit_left and pos[0] < camera.limit_right and pos[1] < camera.limit_bottom + VERTICAL_TOLLERANCE
+	return pos[0] > camera.limit_left - LEFT_TOLLERANCE and pos[0] < camera.limit_right + RIGHT_TOLLERANCE and pos[1] < camera.limit_bottom + BOTTOM_TOLLERANCE and pos[1] > camera.limit_top - TOP_TOLLERANCE
 
 
 func back_to_menu():
@@ -167,25 +177,6 @@ func back_to_menu():
 func back_to_credits():
 	get_parent().call_deferred("back_to_credits")
 	queue_free()
-
-
-func start_sleeves_music():
-	if music_noir.playing:
-		music_sleeves.volume_db = -80
-		music_sleeves.play()
-		
-		tween_noir.interpolate_property(music_noir, "volume_db", MUSIC_VOLUME, -80, MUSIC_TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween_sleeves.interpolate_property(music_sleeves, "volume_db", -80, MUSIC_VOLUME, MUSIC_TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween_noir.start()
-		tween_sleeves.start()
-		
-		yield(get_tree().create_timer(MUSIC_TRANSITION_TIME), "timeout")
-		
-		music_noir.stop()
-
-
-func get_starting_position():
-	return starting_position
 
 
 # Returns a printable string that shows the elapsed time in hours:minutes:seconds

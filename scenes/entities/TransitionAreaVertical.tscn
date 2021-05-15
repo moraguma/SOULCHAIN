@@ -3,17 +3,22 @@
 [ext_resource path="res://scenes/scripts/TransitionArea.gd" type="Script" id=1]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 8, 24 )
+extents = Vector2( 16, 8 )
 
 [node name="TransitionArea" type="Area2D"]
 monitoring = false
-collision_layer = 16
+collision_layer = 2147483664
 collision_mask = 4
 script = ExtResource( 1 )
+is_horizontal = false
+transition_distance = 40
 
 [node name="InteractionArea" type="CollisionShape2D" parent="."]
 shape = SubResource( 1 )
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="SpawnPoint" type="Node2D" parent="."]
-position = Vector2( 0, -32 )
+position = Vector2( 0, 16 )
 [connection signal="body_entered" from="." to="." method="transition" flags=6]

@@ -70,6 +70,7 @@ singletons=[  ]
 
 "pixel snap"=true
 physics=false
+particle=false
 
 [importer_defaults]
 

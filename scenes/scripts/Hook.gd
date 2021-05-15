@@ -6,8 +6,8 @@ export (PackedScene) var HookHitParticles
 # ------------------------------------------------
 # MOVEMENT CONSTANTS
 
-const BASE_SPEED = 12
-const RETURN_SPEED = 12
+const BASE_SPEED = 10
+const RETURN_SPEED = 10
 const RETURN_COLLIDE_DISTANCE = 5
 const COLLECT_DISTANCE = 15
 const MAX_CHAINS = 40
@@ -43,6 +43,7 @@ onready var drawing_line = $DrawingLine
 onready var animation_player = $AnimationPlayer
 onready var raycast_controller = $RaycastController
 onready var sprite = $Sprite
+onready var light = $Light
 var tilemap = null
 
 onready var throw_sound = $ThrowSound
@@ -67,8 +68,6 @@ func _ready():
 	parent.add_child(chain)
 	
 	chain_list.append(chain)
-	
-	tilemap = player.tilemap
 
 
 func _physics_process(delta):
@@ -106,6 +105,8 @@ func _movement_process():
 		
 		if temp_collision:
 			camera.add_trauma(camera.SHAKE_SMALL)
+			
+			tilemap = temp_collision.collider
 			
 			if tilemap.can_stick(temp_collision, position):
 				dir = Vector2(0, 0)
@@ -257,19 +258,52 @@ func _return_process():
 
 func _animation_process():
 	if is_returning or not defined_length:
-		animation_player.play("shoot")
+		var angle = dir.angle()
+		
+		if -7 * PI / 8 <= angle and angle < -5 * PI / 8:
+			animation_player.try_play_animation("shoot_diagonal")
+			sprite.flip_h = true
+			sprite.flip_v = false
+		elif -5 * PI / 8 <= angle and angle < -3 * PI / 8:
+			animation_player.try_play_animation("shoot_vertical")
+			sprite.flip_h = false
+			sprite.flip_v = false
+		elif -3 * PI / 8 <= angle and angle < -1 * PI / 8:
+			animation_player.try_play_animation("shoot_diagonal")
+			sprite.flip_h = false
+			sprite.flip_v = false
+		elif -1 * PI / 8 <= angle and angle < 1 * PI / 8:
+			animation_player.try_play_animation("shoot_horizontal")
+			sprite.flip_h = false
+			sprite.flip_v = false
+		elif 1 * PI / 8 <= angle and angle < 3 * PI / 8:
+			animation_player.try_play_animation("shoot_diagonal")
+			sprite.flip_h = false
+			sprite.flip_v = true
+		elif 3 * PI / 8 <= angle and angle < 5 * PI / 8:
+			animation_player.try_play_animation("shoot_vertical")
+			sprite.flip_h = false
+			sprite.flip_v = true
+		elif 5 * PI / 8 <= angle and angle < 7 * PI / 8:
+			animation_player.try_play_animation("shoot_diagonal")
+			sprite.flip_h = true
+			sprite.flip_v = true
+		else:
+			animation_player.try_play_animation("shoot_horizontal")
+			sprite.flip_h = true
+			sprite.flip_v = false
 	else:
 		var normal = raycast_controller.get_wall_normal()
 		
 		if normal[0] == 0:
-			animation_player.play("stick_horizontal_plane")
+			animation_player.try_play_animation("land_horizontal_plane")
 			
 			if normal[1] > 0:
 				sprite.flip_v = false
 			elif normal[1] < 0:
 				sprite.flip_v = true
 		elif normal[1] == 0:
-			animation_player.play("stick_vertical_plane")
+			animation_player.try_play_animation("land_vertical_plane")
 			
 			if normal[0] > 0:
 				sprite.flip_h = false
@@ -351,6 +385,10 @@ func get_collected(force = false):
 	queue_free()
 
 
+func start_burst_return():
+	start_return()
+
+
 func start_return():
 	pull_sound.play()
 	
@@ -360,3 +398,7 @@ func start_return():
 	set_collision_mask_bit(0, false)
 	set_collision_mask_bit(1, false)
 	set_collision_layer_bit(4, false)
+
+
+func turn_on_light():
+	light.show()

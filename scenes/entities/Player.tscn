@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=2]
+[gd_scene load_steps=43 format=2]
 
 [ext_resource path="res://sprites/spritesheets/tinydeath.png" type="Texture" id=1]
 [ext_resource path="res://scenes/scripts/Player.gd" type="Script" id=2]
@@ -14,6 +14,8 @@
 [ext_resource path="res://scenes/entities/visual/Afterimage.tscn" type="PackedScene" id=12]
 [ext_resource path="res://scenes/scripts/Camera.gd" type="Script" id=13]
 [ext_resource path="res://scenes/entities/visual/BurstParticles.tscn" type="PackedScene" id=14]
+[ext_resource path="res://sprites/textures/playerlight.png" type="Texture" id=15]
+[ext_resource path="res://scenes/entities/visual/DeathParticles.tscn" type="PackedScene" id=16]
 
 [sub_resource type="Animation" id=1]
 resource_name = "air"
@@ -154,7 +156,7 @@ tracks/1/keys = {
 
 [sub_resource type="Animation" id=6]
 resource_name = "dead"
-length = 0.5
+length = 0.4
 tracks/0/type = "value"
 tracks/0/path = NodePath("Sprite:frame")
 tracks/0/interp = 1
@@ -162,7 +164,7 @@ tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 0.1, 0.2, 0.4 ),
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3 ),
 "transitions": PoolRealArray( 1, 1, 1, 1 ),
 "update": 1,
 "values": [ 80, 81, 82, 83 ]
@@ -565,21 +567,22 @@ height = 6.0
 extents = Vector2( 4, 3 )
 
 [node name="Player" type="KinematicBody2D"]
-z_index = 4
+z_index = 9
 z_as_relative = false
-collision_layer = 8
-collision_mask = 7
+collision_layer = 4
+collision_mask = 3
 script = ExtResource( 2 )
 Hook = ExtResource( 4 )
 JumpParticles = ExtResource( 11 )
 BurstParticles = ExtResource( 14 )
 Afterimage = ExtResource( 12 )
+DeathParticles = ExtResource( 16 )
 
 [node name="Sprite" type="Sprite" parent="."]
 texture = ExtResource( 1 )
 vframes = 16
 hframes = 8
-frame = 122
+frame = 80
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 anims/air = SubResource( 1 )
@@ -665,6 +668,8 @@ collision_mask = 3
 
 [node name="VSpeedTween" type="Tween" parent="TweenController"]
 
+[node name="PlayerLightTween" type="Tween" parent="TweenController"]
+
 [node name="TimerController" type="Node" parent="."]
 
 [node name="CoyoteTimeTimer" type="Timer" parent="TimerController"]
@@ -713,5 +718,11 @@ volume_db = 3.0
 [node name="WalkSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 5 )
 volume_db = -20.0
+
+[node name="PlayerLight" type="Light2D" parent="."]
+texture = ExtResource( 15 )
+energy = 0.0
+range_layer_min = -100
+shadow_enabled = true
 [connection signal="timeout" from="TimerController/CoyoteTimeTimer" to="." method="end_coyote_time"]
 [connection signal="timeout" from="TimerController/LogJumpTimer" to="." method="unlog_jump"]

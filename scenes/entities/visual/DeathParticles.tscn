@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://sprites/textures/deathsprites.png" type="Texture" id=1]
+[ext_resource path="res://scenes/scripts/VanishingParticles.gd" type="Script" id=2]
+
+[sub_resource type="CanvasItemMaterial" id=1]
+particles_animation = true
+particles_anim_h_frames = 9
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="Curve" id=2]
+max_value = 500.0
+_data = [ Vector2( 0, 1 ), 0.0, 0.0, 0, 0, Vector2( 0.221865, 500 ), 0.0, 0.0, 0, 0, Vector2( 0.337621, 0 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=3]
+curve = SubResource( 2 )
+
+[sub_resource type="ParticlesMaterial" id=4]
+flag_disable_z = true
+spread = 180.0
+gravity = Vector3( 0, -20, 0 )
+initial_velocity = 80.0
+initial_velocity_random = 0.2
+orbit_velocity = 0.3
+orbit_velocity_random = 0.0
+tangential_accel = -20.0
+damping_curve = SubResource( 3 )
+anim_speed = 1.1
+
+[node name="DeathParticles" type="Particles2D"]
+material = SubResource( 1 )
+z_index = 8
+z_as_relative = false
+lifetime = 1.2
+explosiveness = 1.0
+process_material = SubResource( 4 )
+texture = ExtResource( 1 )
+script = ExtResource( 2 )
+
+[node name="FreeTimer" type="Timer" parent="."]

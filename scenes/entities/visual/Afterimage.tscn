@@ -23,7 +23,7 @@ shader_param/alpha = 1.0
 
 [node name="Sprite" type="Sprite"]
 material = SubResource( 2 )
-z_index = 2
+z_index = 8
 z_as_relative = false
 script = ExtResource( 1 )
 

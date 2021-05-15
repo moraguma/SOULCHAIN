@@ -1,11 +1,9 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://scenes/scripts/MainLoader.gd" type="Script" id=1]
 [ext_resource path="res://scenes/entities/Player.tscn" type="PackedScene" id=2]
-[ext_resource path="res://sprites/textures/ParallaxFront.png" type="Texture" id=3]
-[ext_resource path="res://sprites/textures/ParallaxBack.png" type="Texture" id=4]
-[ext_resource path="res://resources/sounds/01_LOOP_NOIR.ogg" type="AudioStream" id=5]
-[ext_resource path="res://resources/sounds/01_LOOP_ROLLING_SLEEVES.ogg" type="AudioStream" id=6]
+[ext_resource path="res://sprites/textures/somewhereold/parallaxback.png" type="Texture" id=3]
+[ext_resource path="res://sprites/textures/roomshadow.png" type="Texture" id=4]
 
 [node name="MainLoader" type="Node2D"]
 script = ExtResource( 1 )
@@ -13,23 +11,21 @@ Player = ExtResource( 2 )
 
 [node name="Tween" type="Tween" parent="."]
 
-[node name="CameraTweenUp" type="Tween" parent="."]
+[node name="RoomShadowTween" type="Tween" parent="."]
 
-[node name="CameraTweenRight" type="Tween" parent="."]
+[node name="CameraYTween" type="Tween" parent="."]
 
-[node name="CameraTweenDown" type="Tween" parent="."]
-
-[node name="CameraTweenLeft" type="Tween" parent="."]
+[node name="CameraXTween" type="Tween" parent="."]
 
 [node name="ParallaxBackground" type="ParallaxBackground" parent="."]
 
 [node name="ParallaxBack" type="ParallaxLayer" parent="ParallaxBackground"]
-motion_scale = Vector2( 0.2, 0 )
-motion_offset = Vector2( 0, -540 )
-motion_mirroring = Vector2( 3840, 0 )
+motion_scale = Vector2( 0.5, 0.5 )
+motion_offset = Vector2( 0, -108 )
+motion_mirroring = Vector2( 384, 216 )
 
 [node name="Sprite" type="Sprite" parent="ParallaxBackground/ParallaxBack"]
-texture = ExtResource( 4 )
+texture = ExtResource( 3 )
 centered = false
 
 [node name="ParallaxFront" type="ParallaxLayer" parent="ParallaxBackground"]
@@ -38,15 +34,13 @@ motion_offset = Vector2( 0, -540 )
 motion_mirroring = Vector2( 3840, 0 )
 
 [node name="Sprite" type="Sprite" parent="ParallaxBackground/ParallaxFront"]
-texture = ExtResource( 3 )
 centered = false
 
-[node name="MusicNoir" type="AudioStreamPlayer" parent="."]
-stream = ExtResource( 5 )
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="MusicSleeves" type="AudioStreamPlayer" parent="."]
-stream = ExtResource( 6 )
-
-[node name="NoirTween" type="Tween" parent="."]
-
-[node name="SleevesTween" type="Tween" parent="."]
+[node name="RoomShadow" type="Light2D" parent="CanvasLayer"]
+texture = ExtResource( 4 )
+offset = Vector2( 192, 108 )
+energy = 0.4
+mode = 2
+range_layer_min = -100
