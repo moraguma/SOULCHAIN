@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=3 format=2]
+
+[ext_resource path="res://scenes/levels/somewhereold/SleepwalkersPlateau.tscn" type="PackedScene" id=1]
+[ext_resource path="res://scenes/scripts/resources/GameSave.gd" type="Script" id=2]
+
+[resource]
+script = ExtResource( 2 )
+Transition = ExtResource( 1 )
+transition_code = "Up2"
+collectible_flags = {
+"1": false,
+"2": false
+}
+world_flags = {
+"test": false
+}

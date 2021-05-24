@@ -2,7 +2,8 @@ extends Button
 
 
 export (PackedScene) var Level
+export (String) var save_name
 
 
-func start_level(music, position):
-	get_parent().get_parent().start_level(Level, music, position)
+func start_level():
+	get_parent().get_parent().start_level(save_name)

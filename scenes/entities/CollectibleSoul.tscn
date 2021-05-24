@@ -1,0 +1,247 @@
+[gd_scene load_steps=30 format=2]
+
+[ext_resource path="res://scenes/scripts/CollectibleSoul.gd" type="Script" id=1]
+[ext_resource path="res://sprites/spritesheets/collectiblesoul.png" type="Texture" id=2]
+[ext_resource path="res://sprites/textures/playerlight.png" type="Texture" id=3]
+[ext_resource path="res://scenes/entities/Chain.tscn" type="PackedScene" id=4]
+[ext_resource path="res://sprites/textures/soultether.png" type="Texture" id=5]
+[ext_resource path="res://resources/shaders/soulfire.shader" type="Shader" id=6]
+[ext_resource path="res://sprites/spritesheets/collectiblesouleye.png" type="Texture" id=7]
+
+[sub_resource type="Gradient" id=1]
+colors = PoolColorArray( 0.854902, 1, 0.00784314, 1, 1, 0.247059, 0.0156863, 1 )
+
+[sub_resource type="ParticlesMaterial" id=2]
+lifetime_randomness = 0.5
+emission_shape = 1
+emission_sphere_radius = 4.0
+flag_disable_z = true
+gravity = Vector3( 0, -98, 0 )
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+radial_accel = -5.0
+color = Color( 0.623529, 0.886275, 0.282353, 1 )
+hue_variation_random = 0.1
+
+[sub_resource type="ShaderMaterial" id=3]
+shader = ExtResource( 6 )
+shader_param/transparent = Color( 0, 0, 0, 0 )
+shader_param/inner = Color( 0.784314, 0.921569, 0.262745, 1 )
+shader_param/outer = Color( 0.623529, 0.886275, 0.282353, 1 )
+shader_param/OCTAVES = 4
+
+[sub_resource type="AtlasTexture" id=4]
+atlas = ExtResource( 2 )
+region = Rect2( 0, 0, 16, 16 )
+
+[sub_resource type="AtlasTexture" id=5]
+atlas = ExtResource( 2 )
+region = Rect2( 16, 0, 16, 16 )
+
+[sub_resource type="AtlasTexture" id=6]
+atlas = ExtResource( 2 )
+region = Rect2( 32, 0, 16, 16 )
+
+[sub_resource type="AtlasTexture" id=7]
+atlas = ExtResource( 2 )
+region = Rect2( 48, 0, 16, 16 )
+
+[sub_resource type="AtlasTexture" id=8]
+atlas = ExtResource( 2 )
+region = Rect2( 64, 0, 16, 16 )
+
+[sub_resource type="AtlasTexture" id=9]
+atlas = ExtResource( 2 )
+region = Rect2( 80, 0, 16, 16 )
+
+[sub_resource type="SpriteFrames" id=10]
+animations = [ {
+"frames": [ SubResource( 4 ), SubResource( 5 ), SubResource( 6 ), SubResource( 7 ), SubResource( 8 ), SubResource( 9 ) ],
+"loop": true,
+"name": "idle",
+"speed": 10.0
+} ]
+
+[sub_resource type="Shader" id=11]
+code = "shader_type canvas_item;
+
+uniform vec4 transparent = vec4(0.0); // Let's you edit in editor
+uniform vec4 color = vec4(1.0, 0.964705, 0.768627 , 1.0);
+
+uniform float color_threshold = 0.1;
+
+uniform int OCTAVES = 4;
+
+// Returns a pseudo-random number for each pixel
+float rand(vec2 coord) {
+	return fract(sin(dot(coord, vec2(12.9898, 78.233))) * 43758.5453123);
+}
+
+// Gets the value of the surrounding integer points to get the value of the
+// current coordinate, generating a smoother noise texture
+float noise(vec2 coord) {
+	vec2 i = floor(coord); // Takes the integer bit of the number
+	vec2 f = fract(coord); // Takes the decimal (fraction) part of the number
+	
+	// 4 corners of a rectangle surrounding our point
+	float a = rand(i);
+	float b = rand(i + vec2(1.0, 0.0));
+	float c = rand(i + vec2(0.0, 1.0));
+	float d = rand(i + vec2(1.0, 1.0));
+	
+	vec2 cubic = f * f * (3.0 - 2.0 * f);
+	
+	return mix(a, b, cubic.x) + (c - a) * cubic.y * (1.0 - cubic.x) + (d - b) * f.x * f.y;
+}
+
+// Generates more detailed noise
+float fbm(vec2 coord) {
+	float value = 0.0;
+	float scale = 0.5;
+	
+	for (int i = 0; i < OCTAVES; i++) {
+		value += noise(coord) * scale;
+		coord *= 2.0;
+		scale *= 0.5;
+	}
+	return value;
+}
+
+float overlay(float base, float top) {
+	if (base < 0.5) {
+		return 2.0 * base * top;
+	} else {
+		return 1.0 - 2.0 * (1.0 - base) * (1.0 - top);
+	}
+}
+
+// UV returns the pixel's coordinate
+
+void fragment() {
+	vec2 coord = UV * 8.0;
+	vec2 fbm_coord = coord / 5.0;
+	
+	vec4 tx = texture(TEXTURE, UV);
+	float tx_level = tx.r;
+	
+	float noise1 = noise(coord + vec2(TIME * 0.25 , TIME * 5.0));
+	float noise2 = noise(coord + vec2(TIME * 0.5, TIME * 8.0));
+	float combined_noise = (noise1 + noise2) / 2.0;
+	
+	float fbm_noise = fbm(fbm_coord + vec2(0.0, TIME * 3.0));
+	fbm_noise = overlay(fbm_noise, UV.y);
+	
+	float everything_combined = combined_noise * fbm_noise * tx_level;
+	
+	if (everything_combined < color_threshold) {
+		COLOR = transparent;
+	} else {
+		COLOR = color;
+	}
+}"
+
+[sub_resource type="ShaderMaterial" id=12]
+shader = SubResource( 11 )
+shader_param/transparent = Plane( 0, 0, 0, 0 )
+shader_param/color = Plane( 1, 0.964705, 0.768627, 1 )
+shader_param/color_threshold = 0.1
+shader_param/OCTAVES = 4
+
+[sub_resource type="AtlasTexture" id=13]
+atlas = ExtResource( 7 )
+region = Rect2( 0, 0, 16, 16 )
+
+[sub_resource type="AtlasTexture" id=14]
+atlas = ExtResource( 7 )
+region = Rect2( 16, 0, 16, 16 )
+
+[sub_resource type="AtlasTexture" id=15]
+atlas = ExtResource( 7 )
+region = Rect2( 32, 0, 16, 16 )
+
+[sub_resource type="AtlasTexture" id=16]
+atlas = ExtResource( 7 )
+region = Rect2( 48, 0, 16, 16 )
+
+[sub_resource type="AtlasTexture" id=17]
+atlas = ExtResource( 7 )
+region = Rect2( 64, 0, 16, 16 )
+
+[sub_resource type="AtlasTexture" id=18]
+atlas = ExtResource( 7 )
+region = Rect2( 80, 0, 16, 16 )
+
+[sub_resource type="SpriteFrames" id=19]
+animations = [ {
+"frames": [ SubResource( 13 ), SubResource( 14 ), SubResource( 15 ), SubResource( 16 ), SubResource( 17 ), SubResource( 18 ) ],
+"loop": true,
+"name": "idle",
+"speed": 10.0
+} ]
+
+[sub_resource type="CircleShape2D" id=20]
+radius = 6.0
+
+[sub_resource type="Shader" id=21]
+code = "shader_type canvas_item;
+
+uniform vec3 color = vec3(0, 0, 0);
+
+void fragment() {
+	COLOR = texture(TEXTURE, UV);
+	
+	if (COLOR.a != 0.0) {
+		COLOR = vec4(color, 1.0);
+	}
+}"
+
+[sub_resource type="ShaderMaterial" id=22]
+shader = SubResource( 21 )
+shader_param/color = Vector3( 0, 0, 0 )
+
+[node name="CollectibleSoul" type="Area2D"]
+collision_layer = 0
+collision_mask = 4
+script = ExtResource( 1 )
+Chain = ExtResource( 4 )
+GRADIENT = SubResource( 1 )
+
+[node name="FloatUpParticles" type="Particles2D" parent="."]
+position = Vector2( 0, 1 )
+z_index = 10
+z_as_relative = false
+lifetime = 0.8
+process_material = SubResource( 2 )
+
+[node name="Sprite" type="AnimatedSprite" parent="."]
+material = SubResource( 3 )
+z_index = 10
+z_as_relative = false
+frames = SubResource( 10 )
+animation = "idle"
+frame = 1
+
+[node name="EyeSprite" type="AnimatedSprite" parent="."]
+material = SubResource( 12 )
+z_index = 10
+z_as_relative = false
+frames = SubResource( 19 )
+animation = "idle"
+
+[node name="InteractionHitbox" type="CollisionShape2D" parent="."]
+position = Vector2( 0, 1 )
+shape = SubResource( 20 )
+
+[node name="Light" type="Light2D" parent="."]
+texture = ExtResource( 3 )
+energy = 0.8
+range_layer_min = -100
+shadow_enabled = true
+
+[node name="DrawingLine" type="Line2D" parent="."]
+material = SubResource( 22 )
+z_index = 7
+width = 15.0
+texture = ExtResource( 5 )
+texture_mode = 1
+[connection signal="body_entered" from="." to="." method="start_collection"]

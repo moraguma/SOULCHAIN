@@ -57,6 +57,8 @@ cell_size = Vector2( 8, 8 )
 format = 1
 tile_data = PoolIntArray( 262155, 536870923, 0, 983042, -536870905, 0, 1507372, -2147483641, 0, 2228268, -2147483638, 0, 3276804, 536870918, 0 )
 
+[node name="Resetters" type="Node2D" parent="."]
+
 [node name="SomewhereOldBGParticles" parent="." instance=ExtResource( 1 )]
 position = Vector2( 192, 432 )
 

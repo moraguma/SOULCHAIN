@@ -18,6 +18,8 @@ var sprite
 var camera
 var sprite_flip_h
 
+onready var main = get_parent()
+
 onready var start_time = OS.get_ticks_msec()
 
 onready var tween = $Tween
@@ -45,7 +47,7 @@ func spawn(Transition, transition_code):
 	var current_transition = current_area.get_node("Transitions").get_node("TransitionArea" + transition_code)
 	
 	respawn_position = current_area.position + current_transition.spawn_point
-	sprite_flip_h = current_transition.facing_right_on_respawn
+	sprite_flip_h = not current_transition.facing_right_on_respawn
 	
 	camera.limit_left = current_area.min_x
 	camera.limit_right = current_area.max_x
@@ -58,6 +60,9 @@ func spawn(Transition, transition_code):
 	player.update_tilemap()
 
 func transition(Transition, transition_code, transition_area):
+	main.update_room(Transition, transition_code)
+	main.save_game()
+	
 	var past_area = current_area
 	current_area = Transition.instance()
 	
@@ -68,18 +73,20 @@ func transition(Transition, transition_code, transition_area):
 	respawn_position = current_area.position + new_transition_area.spawn_point
 	sprite_flip_h = transition_area.facing_right_on_respawn
 	
+	var camera_screen_center = camera.get_camera_screen_center()
+	
 	if past_area.position[1] > current_area.position[1]:
-		camera_y_tween.interpolate_property(camera, "limit_bottom", past_area.position[1] + 216, current_area.position[1] + current_area.max_y, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+		camera_y_tween.interpolate_property(camera, "limit_bottom", camera_screen_center[1] + 108, current_area.position[1] + current_area.max_y, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
 		camera.limit_top = current_area.position[1] + current_area.min_y
 	else:
-		camera_y_tween.interpolate_property(camera, "limit_top", past_area.position[1] + past_area.max_y - 216, current_area.position[1] + current_area.min_y, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+		camera_y_tween.interpolate_property(camera, "limit_top", camera_screen_center[1] - 108, current_area.position[1] + current_area.min_y, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
 		camera.limit_bottom = current_area.position[1] + current_area.max_y
 	
 	if past_area.position[0] > current_area.position[0]:
-		camera_x_tween.interpolate_property(camera, "limit_right", past_area.position[0] + 384, current_area.position[0] + current_area.max_x, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+		camera_x_tween.interpolate_property(camera, "limit_right", camera_screen_center[0] + 192, current_area.position[0] + current_area.max_x, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
 		camera.limit_left = current_area.position[0] + current_area.min_x
 	else:
-		camera_x_tween.interpolate_property(camera, "limit_left", past_area.position[0] + past_area.max_x - 384, current_area.position[0] + current_area.min_x, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+		camera_x_tween.interpolate_property(camera, "limit_left", camera_screen_center[0] - 192, current_area.position[0] + current_area.min_x, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
 		camera.limit_right = current_area.position[0] + current_area.max_x
 	
 	player.is_transitioning = true
@@ -128,6 +135,9 @@ func transition(Transition, transition_code, transition_area):
 
 
 func respawn():
+	for node in current_area.get_node("Resetters").get_children():
+		node.reset()
+	
 	total_deaths += 1
 	
 	var del_player = player

@@ -10,8 +10,9 @@ const BASE_SPEED = 10
 const RETURN_SPEED = 10
 const RETURN_COLLIDE_DISTANCE = 5
 const COLLECT_DISTANCE = 15
-const MAX_CHAINS = 40
 const MIN_SIZE_FOR_REAL_DIR = 8
+
+const MAX_CHAINS = 40
 # ------------------------------------------------
 
 # ------------------------------------------------
@@ -173,12 +174,11 @@ func _chain_process():
 	i = 0
 	
 	while i < total_chains:
+		if total_chains > MAX_CHAINS:
+			get_collected()
+			return
 		
 		chain_list[i].force_raycast_update()
-		
-		if i > MAX_CHAINS:
-			get_collected(true)
-			return
 		
 		if chain_list[i].is_colliding():
 			var original_pos = chain_list[i].position
@@ -187,7 +187,6 @@ func _chain_process():
 			
 			var col_tilemap = chain_list[i].get_collider()
 			
-			#var possible_corners = col_tilemap.get_corner_positions(chain_list[i].get_collision_point())
 			var possible_corners = col_tilemap.get_possible_corners(chain_list[i].get_collision_point(), chain_list[i].get_collision_normal())
 			
 			var corner_pos = Vector2(0, 0)
@@ -374,7 +373,8 @@ func get_shot(new_dir, pos):
 	set_collision_mask_bit(1, true)
 
 
-func get_collected(force = false):
+func get_collected():
+	
 	active = false
 	
 	for i in chain_list:

@@ -71,7 +71,7 @@ const IMPULSE_JUMP_END_GRAVITY = 0.09
 
 # VERTICAL MAX SPEED
 const V_MAX_SPEED = 190
-const WALL_SLIDE_V_MAX_SPEED = 30
+const WALL_SLIDE_V_MAX_SPEED = 40
 const SWING_V_MAX_SPEED = 300
 
 # TWEEN VERTICAL MAX SPEED
@@ -206,7 +206,6 @@ func _ready():
 
 # Physics processing. Encompasses player input, movement and animation
 func _physics_process(delta):
-	
 	if Input.is_action_just_pressed("menu"):
 		parent.back_to_menu()
 	
