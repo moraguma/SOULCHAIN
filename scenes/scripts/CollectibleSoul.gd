@@ -6,6 +6,12 @@ export (Gradient) var GRADIENT
 export var COLLECTION_DISTANCE = 100
 export var testing_mode = false
 
+export var flag = ""
+
+const SOUL_MIN_COLLISION_DISTANCE = 5
+const MIN_COLLISION_DISTANCE = 1
+
+const CHAIN_SPACING_TOLLERANCE = 8
 const MAX_CHAINS = 40
 
 var collection_started = false
@@ -25,13 +31,18 @@ onready var eye_sprite = $EyeSprite
 
 func _ready():
 	if get_tree().get_root().has_node("Main"):
-		parent = get_parent().get_parent().get_parent()
-	else:
 		parent = get_parent().get_parent()
+	else:
+		parent = get_parent()
 		debug_mode = true
+	
+	if not debug_mode:
+		if parent.get_collectible_flag(flag):
+			hide()
+			queue_free()
 
 
-func _physics_process(delta):	
+func _physics_process(delta):
 	if collection_started:
 		_chain_process()
 		_line_draw_process()
@@ -91,43 +102,51 @@ func _chain_process():
 		chain_list[i].force_raycast_update()
 		
 		if chain_list[i].is_colliding():
-			var original_pos = chain_list[i].position
-			var original_vector = chain_list[i].cast_to
-			var final_pos = chain_list[i].position + chain_list[i].cast_to 
+			var true_min_col_dist
+			if i == 0:
+				true_min_col_dist = SOUL_MIN_COLLISION_DISTANCE
+			else:
+				true_min_col_dist = MIN_COLLISION_DISTANCE
 			
-			var col_tilemap = chain_list[i].get_collider()
-			
-			var possible_corners = col_tilemap.get_possible_corners(chain_list[i].get_collision_point(), chain_list[i].get_collision_normal())
-			
-			var corner_pos = Vector2(0, 0)
-			if len(possible_corners) > 0:
-				var z = 0
-				while z < len(possible_corners):
-					if possible_corners[z] == chain_list[i].position:
-						possible_corners.remove(z)
-					else:
-						z += 1
+			if (chain_list[i].get_collision_point() - chain_list[i].position).distance_to(Vector2(0, 0)) >= true_min_col_dist:
+				var original_pos = chain_list[i].position
+				var original_vector = chain_list[i].cast_to
+				var final_pos = chain_list[i].position + chain_list[i].cast_to 
 				
+				var col_tilemap = chain_list[i].get_collider()
+				
+				var possible_corners = col_tilemap.get_possible_corners(chain_list[i].get_collision_point(), chain_list[i].get_collision_normal())
+				
+				var corner_pos = Vector2(0, 0)
 				if len(possible_corners) > 0:
-					corner_pos = possible_corners[0]
+					var z = 0
+					while z < len(possible_corners):
+						if (possible_corners[z] - chain_list[i].position).distance_to(Vector2(0, 0)) < CHAIN_SPACING_TOLLERANCE:
+							possible_corners.remove(z)
+						else:
+							z += 1
 					
-					for j in range(1, len(possible_corners)):
-						if distance_to_raycast(og_raycast_info[i][0], og_raycast_info[i][1], possible_corners[j]) < distance_to_raycast(og_raycast_info[i][0], og_raycast_info[i][1], corner_pos):
-							corner_pos = possible_corners[j]
-			
-			chain_list[i].cast_to = corner_pos - chain_list[i].position
-			
-			var new_chain = Chain.instance()
-			new_chain.position = corner_pos
-			new_chain.cast_to = final_pos - corner_pos
-			
-			parent.add_child(new_chain)
-			new_chain.force_raycast_update()
-			
-			chain_list.insert(i + 1, new_chain)
-			clockwise_list.insert(i, chain_list[i].cast_to.angle_to(chain_list[i + 1].cast_to) > 0)
-			og_raycast_info.insert(i + 1, [chain_list[i + 1].position, chain_list[i + 1].cast_to])
-			total_chains += 1
+					if len(possible_corners) > 0:
+						corner_pos = possible_corners[0]
+						
+						for j in range(1, len(possible_corners)):
+							if distance_to_raycast(og_raycast_info[i][0], og_raycast_info[i][1], possible_corners[j]) < distance_to_raycast(og_raycast_info[i][0], og_raycast_info[i][1], corner_pos):
+								corner_pos = possible_corners[j]
+				
+				chain_list[i].cast_to = corner_pos - chain_list[i].position
+				
+				var new_chain = Chain.instance()
+				new_chain.position = corner_pos
+				new_chain.cast_to = final_pos - corner_pos
+				new_chain.sticker = chain_list[i].get_collider()
+				
+				parent.add_child(new_chain)
+				new_chain.force_raycast_update()
+				
+				chain_list.insert(i + 1, new_chain)
+				clockwise_list.insert(i, chain_list[i].cast_to.angle_to(chain_list[i + 1].cast_to) > 0)
+				og_raycast_info.insert(i + 1, [chain_list[i + 1].position, chain_list[i + 1].cast_to])
+				total_chains += 1
 		i += 1
 
 
@@ -169,6 +188,9 @@ func _length_process():
 
 
 func get_collected():
+	if not debug_mode:
+		parent.update_collectible_flag(flag, true)
+	
 	for i in chain_list:
 		i.queue_free()
 	

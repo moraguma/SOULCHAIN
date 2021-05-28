@@ -1,5 +1,7 @@
 extends Particles2D
 
+var velocity = Vector2(0, 0)
+
 func _ready():
 	emitting = true
 	
@@ -8,6 +10,10 @@ func _ready():
 	timer.start(lifetime * (1 + process_material.lifetime_randomness))
 	yield(timer, "timeout")
 	queue_free()
+
+
+func _physics_process(delta):
+	position += velocity * delta
 
 
 func set_direction(v):

@@ -150,6 +150,31 @@ restart={
  ]
 }
 
+[layer_names]
+
+2d_render/layer_1="Parallax Back"
+2d_physics/layer_1="Tiles"
+2d_render/layer_2="ParallaxMid"
+2d_physics/layer_2="Death Tiles"
+2d_render/layer_3="ParallaxFront"
+2d_physics/layer_3="Player"
+2d_render/layer_4="Bg Noise"
+2d_physics/layer_4="Hook"
+2d_render/layer_5="Walls"
+2d_physics/layer_5="Interactibles"
+2d_render/layer_6="Close Noise"
+2d_physics/layer_6="Moving Platforms"
+2d_render/layer_7="Objects"
+2d_physics/layer_7="One Way Platforms"
+2d_render/layer_8="Chain"
+2d_physics/layer_8="Hit Triggers"
+2d_render/layer_9="Hook"
+2d_render/layer_10="Player"
+2d_render/layer_11="Interactibles"
+2d_render/layer_12="Tiles"
+2d_render/layer_13="Fg Noise"
+2d_render/layer_14="Lights"
+
 [rendering]
 
 quality/driver/fallback_to_gles2=true

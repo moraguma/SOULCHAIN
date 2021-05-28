@@ -26,10 +26,6 @@ onready var tween = $Tween
 onready var camera_x_tween = $CameraXTween
 onready var camera_y_tween = $CameraYTween
 
-func initialize_player():
-	#TEMPORARY
-	
-	player.turn_on_light()
 
 func spawn(Transition, transition_code):
 	player = Player.instance()
@@ -37,8 +33,6 @@ func spawn(Transition, transition_code):
 	camera = player.get_node("Camera")
 	
 	add_child(player)
-	
-	initialize_player()
 	
 	current_area = Transition.instance()
 	add_child(current_area)
@@ -56,8 +50,6 @@ func spawn(Transition, transition_code):
 	
 	player.position = respawn_position
 	sprite.flip_h = sprite_flip_h
-	
-	player.update_tilemap()
 
 func transition(Transition, transition_code, transition_area):
 	main.update_room(Transition, transition_code)
@@ -131,12 +123,12 @@ func transition(Transition, transition_code, transition_area):
 	current_area.initialize_transitions()
 	
 	player.force_recover_hook()
-	player.update_tilemap()
 
 
 func respawn():
-	for node in current_area.get_node("Resetters").get_children():
-		node.reset()
+	for node in get_tree().get_nodes_in_group("Resetter"):
+		if current_area.is_a_parent_of(node):
+			node.reset()
 	
 	total_deaths += 1
 	
@@ -161,14 +153,6 @@ func respawn():
 	sprite.flip_h = sprite_flip_h
 	
 	add_child(player)
-	
-	initialize_player()
-	
-	player.update_tilemap()
-
-
-func get_tilemaps():
-	return current_area.get_node("Tiles").get_children()
 
 
 func get_player():
@@ -210,3 +194,19 @@ func get_total_deaths():
 
 func get_true_position(pos):
 	return current_area.position + pos
+
+
+func update_collectible_flag(flag_name, bool_value):
+	main.update_collectible_flag(flag_name, bool_value)
+
+
+func update_world_flag(flag_name, bool_value):
+	main.update_world_flag(flag_name, bool_value)
+
+
+func get_collectible_flag(flag_name):
+	return main.get_collectible_flag(flag_name)
+
+
+func get_world_flag(flag_name):
+	return main.get_world_flag(flag_name)

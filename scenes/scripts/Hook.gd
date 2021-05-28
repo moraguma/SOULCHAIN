@@ -7,11 +7,16 @@ export (PackedScene) var HookHitParticles
 # MOVEMENT CONSTANTS
 
 const BASE_SPEED = 10
-const RETURN_SPEED = 10
+const RETURN_SPEED = 12
 const RETURN_COLLIDE_DISTANCE = 5
 const COLLECT_DISTANCE = 15
 const MIN_SIZE_FOR_REAL_DIR = 8
 
+const FORCE_STUCK_LENGHT_MODIFIER = 10
+const HOOK_MIN_COLLISION_DISTANCE = 5
+const MIN_COLLISION_DISTANCE = 1
+const HOOK_RETURN_MIN_COLLISION_DISTANCE = 6
+const CHAIN_SPACING_TOLLERANCE = 8
 const MAX_CHAINS = 40
 # ------------------------------------------------
 
@@ -26,12 +31,15 @@ var can_get_shot = true
 var is_returning = false
 var active = true
 
+var last_stick_pos = Vector2(0, 0)
+var wall_normal = Vector2(0, 0)
 var last_cast
 var defined_length = false
 var max_length = 99999
 
 var dir = Vector2(0, 0)
 var collision = null
+var sticker = null
 # ------------------------------------------------
 
 # ------------------------------------------------
@@ -42,9 +50,7 @@ var player
 var camera
 onready var drawing_line = $DrawingLine
 onready var animation_player = $AnimationPlayer
-onready var raycast_controller = $RaycastController
 onready var sprite = $Sprite
-onready var light = $Light
 var tilemap = null
 
 onready var throw_sound = $ThrowSound
@@ -76,6 +82,8 @@ func _physics_process(delta):
 		if not is_returning:
 			if not defined_length:
 				_movement_process()
+			else:
+				_moving_platform_processing()
 		else:
 			_return_process()
 		
@@ -107,10 +115,18 @@ func _movement_process():
 		if temp_collision:
 			camera.add_trauma(camera.SHAKE_SMALL)
 			
-			tilemap = temp_collision.collider
+			tilemap = temp_collision.collider.get_associated_tilemap()
 			
 			if tilemap.can_stick(temp_collision, position):
+				var test = temp_collision.collider
+				if temp_collision.collider.get_collision_layer_bit(7):
+					temp_collision.collider.start_moving()
+				
 				dir = Vector2(0, 0)
+				wall_normal = temp_collision.normal
+				
+				sticker = temp_collision.collider
+				last_stick_pos = sticker.position
 				
 				if not defined_length:
 					hit_sound.play()
@@ -181,44 +197,61 @@ func _chain_process():
 		chain_list[i].force_raycast_update()
 		
 		if chain_list[i].is_colliding():
-			var original_pos = chain_list[i].position
-			var original_vector = chain_list[i].cast_to
-			var final_pos = chain_list[i].position + chain_list[i].cast_to 
+			var true_min_col_dist
+			if is_returning:
+				true_min_col_dist = HOOK_RETURN_MIN_COLLISION_DISTANCE
+			elif i == 0:
+				true_min_col_dist = HOOK_MIN_COLLISION_DISTANCE
+			else:
+				true_min_col_dist = MIN_COLLISION_DISTANCE
 			
-			var col_tilemap = chain_list[i].get_collider()
-			
-			var possible_corners = col_tilemap.get_possible_corners(chain_list[i].get_collision_point(), chain_list[i].get_collision_normal())
-			
-			var corner_pos = Vector2(0, 0)
-			if len(possible_corners) > 0:
-				var z = 0
-				while z < len(possible_corners):
-					if possible_corners[z] == chain_list[i].position:
-						possible_corners.remove(z)
-					else:
-						z += 1
+			if (chain_list[i].get_collision_point() - chain_list[i].position).distance_to(Vector2(0, 0)) >= true_min_col_dist:
+				var original_pos = chain_list[i].position
+				var original_vector = chain_list[i].cast_to
+				var final_pos = chain_list[i].position + chain_list[i].cast_to 
 				
+				var col_tilemap = chain_list[i].get_collider().get_associated_tilemap()
+				
+				var possible_corners = col_tilemap.get_possible_corners(chain_list[i].get_collision_point(), chain_list[i].get_collision_normal())
+				
+				var corner_pos = Vector2(0, 0)
 				if len(possible_corners) > 0:
-					corner_pos = possible_corners[0]
+					var z = 0
+					while z < len(possible_corners):
+						if (possible_corners[z] - chain_list[i].position).distance_to(Vector2(0, 0)) < CHAIN_SPACING_TOLLERANCE:
+							possible_corners.remove(z)
+						else:
+							z += 1
 					
-					for j in range(1, len(possible_corners)):
-						if distance_to_raycast(og_raycast_info[i][0], og_raycast_info[i][1], possible_corners[j]) < distance_to_raycast(og_raycast_info[i][0], og_raycast_info[i][1], corner_pos):
-							corner_pos = possible_corners[j]
-			
-			chain_list[i].cast_to = corner_pos - chain_list[i].position
-			
-			var new_chain = Chain.instance()
-			new_chain.position = corner_pos
-			new_chain.cast_to = final_pos - corner_pos
-			
-			parent.add_child(new_chain)
-			new_chain.force_raycast_update()
-			
-			chain_list.insert(i + 1, new_chain)
-			clockwise_list.insert(i, chain_list[i].cast_to.angle_to(chain_list[i + 1].cast_to) > 0)
-			og_raycast_info.insert(i + 1, [chain_list[i + 1].position, chain_list[i + 1].cast_to])
-			total_chains += 1
+					if len(possible_corners) > 0:
+						corner_pos = possible_corners[0]
+						
+						for j in range(1, len(possible_corners)):
+							if distance_to_raycast(og_raycast_info[i][0], og_raycast_info[i][1], possible_corners[j]) < distance_to_raycast(og_raycast_info[i][0], og_raycast_info[i][1], corner_pos):
+								corner_pos = possible_corners[j]
+				
+				chain_list[i].cast_to = corner_pos - chain_list[i].position
+				
+				var new_chain = Chain.instance()
+				new_chain.position = corner_pos
+				new_chain.cast_to = final_pos - corner_pos
+				new_chain.sticker = chain_list[i].get_collider()
+				
+				parent.add_child(new_chain)
+				new_chain.force_raycast_update()
+				
+				chain_list.insert(i + 1, new_chain)
+				clockwise_list.insert(i, chain_list[i].cast_to.angle_to(chain_list[i + 1].cast_to) > 0)
+				og_raycast_info.insert(i + 1, [chain_list[i + 1].position, chain_list[i + 1].cast_to])
+				total_chains += 1
 		i += 1
+
+
+func _moving_platform_processing():
+	if sticker != null:
+		if last_stick_pos != sticker.position:
+			position += sticker.position - last_stick_pos
+			last_stick_pos = sticker.position
 
 
 func _line_draw_process():
@@ -292,21 +325,19 @@ func _animation_process():
 			sprite.flip_h = true
 			sprite.flip_v = false
 	else:
-		var normal = raycast_controller.get_wall_normal()
-		
-		if normal[0] == 0:
+		if wall_normal[0] == 0:
 			animation_player.try_play_animation("land_horizontal_plane")
 			
-			if normal[1] > 0:
+			if wall_normal[1] > 0:
 				sprite.flip_v = false
-			elif normal[1] < 0:
+			elif wall_normal[1] < 0:
 				sprite.flip_v = true
-		elif normal[1] == 0:
+		elif wall_normal[1] == 0:
 			animation_player.try_play_animation("land_vertical_plane")
 			
-			if normal[0] > 0:
+			if wall_normal[0] > 0:
 				sprite.flip_h = false
-			elif normal[0] < 0:
+			elif wall_normal[0] < 0:
 				sprite.flip_h = true
 
 func get_total_length():
@@ -359,7 +390,10 @@ func get_burst_dir():
 
 
 func burst():
-	tilemap.dehook_tiles(collision, position)
+	if tilemap != null:
+		tilemap.dehook_tiles(collision, position)
+	else:
+		sticker.burst()
 
 
 func get_shot(new_dir, pos):
@@ -400,5 +434,16 @@ func start_return():
 	set_collision_layer_bit(4, false)
 
 
-func turn_on_light():
-	light.show()
+func force_stick(body, pos):
+	if not defined_length:
+		hit_sound.play()
+		
+		max_length = get_total_length() - FORCE_STUCK_LENGHT_MODIFIER
+		defined_length = true
+	
+	position = pos
+	sticker = body
+	last_stick_pos = sticker.position
+	
+	dir = Vector2(0, 0)
+	wall_normal = Vector2(0, 1)

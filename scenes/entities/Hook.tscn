@@ -1,16 +1,15 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=19 format=2]
 
 [ext_resource path="res://scenes/scripts/Hook.gd" type="Script" id=1]
 [ext_resource path="res://scenes/entities/Chain.tscn" type="PackedScene" id=2]
 [ext_resource path="res://sprites/spritesheets/tinydeathhook.png" type="Texture" id=3]
 [ext_resource path="res://sprites/textures/chain.png" type="Texture" id=4]
-[ext_resource path="res://scenes/scripts/RaycastControllerHook.gd" type="Script" id=5]
+[ext_resource path="res://scenes/entities/Light.tscn" type="PackedScene" id=5]
 [ext_resource path="res://resources/sounds/pull.wav" type="AudioStream" id=6]
 [ext_resource path="res://resources/sounds/throw.wav" type="AudioStream" id=7]
 [ext_resource path="res://resources/sounds/hit.wav" type="AudioStream" id=8]
 [ext_resource path="res://scenes/entities/visual/HookHitParticles.tscn" type="PackedScene" id=9]
 [ext_resource path="res://scenes/scripts/AnimationPlayerHook.gd" type="Script" id=10]
-[ext_resource path="res://sprites/textures/playerlight.png" type="Texture" id=11]
 
 [sub_resource type="Animation" id=1]
 resource_name = "land_horizontal_plane"
@@ -169,7 +168,7 @@ HookHitParticles = ExtResource( 9 )
 texture = ExtResource( 3 )
 vframes = 7
 hframes = 6
-frame = 37
+frame = 31
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 anims/land_horizontal_plane = SubResource( 1 )
@@ -192,32 +191,6 @@ default_color = Color( 1, 1, 1, 1 )
 texture = ExtResource( 4 )
 texture_mode = 1
 
-[node name="RaycastController" type="Node2D" parent="."]
-script = ExtResource( 5 )
-
-[node name="Up" type="RayCast2D" parent="RaycastController"]
-enabled = true
-cast_to = Vector2( 0, -6 )
-
-[node name="Right" type="RayCast2D" parent="RaycastController"]
-enabled = true
-cast_to = Vector2( 6, 0 )
-
-[node name="Down" type="RayCast2D" parent="RaycastController"]
-enabled = true
-cast_to = Vector2( 0, 6 )
-
-[node name="Left" type="RayCast2D" parent="RaycastController"]
-enabled = true
-cast_to = Vector2( -6, 0 )
-
-[node name="Light" type="Light2D" parent="."]
-visible = false
-texture = ExtResource( 11 )
-energy = 0.85
-range_layer_min = -100
-shadow_enabled = true
-
 [node name="ThrowSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 7 )
 
@@ -226,3 +199,5 @@ stream = ExtResource( 8 )
 
 [node name="PullSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 6 )
+
+[node name="Light" parent="." instance=ExtResource( 5 )]

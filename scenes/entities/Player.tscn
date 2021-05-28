@@ -14,7 +14,7 @@
 [ext_resource path="res://scenes/entities/visual/Afterimage.tscn" type="PackedScene" id=12]
 [ext_resource path="res://scenes/scripts/Camera.gd" type="Script" id=13]
 [ext_resource path="res://scenes/entities/visual/BurstParticles.tscn" type="PackedScene" id=14]
-[ext_resource path="res://sprites/textures/playerlight.png" type="Texture" id=15]
+[ext_resource path="res://scenes/entities/Light.tscn" type="PackedScene" id=15]
 [ext_resource path="res://scenes/entities/visual/DeathParticles.tscn" type="PackedScene" id=16]
 
 [sub_resource type="Animation" id=1]
@@ -570,7 +570,7 @@ extents = Vector2( 4, 3 )
 z_index = 9
 z_as_relative = false
 collision_layer = 4
-collision_mask = 3
+collision_mask = 67
 script = ExtResource( 2 )
 Hook = ExtResource( 4 )
 JumpParticles = ExtResource( 11 )
@@ -626,37 +626,63 @@ script = ExtResource( 3 )
 position = Vector2( 0, -6 )
 enabled = true
 cast_to = Vector2( 6, 0 )
-collision_mask = 3
 
 [node name="UpLeft" type="RayCast2D" parent="RaycastController"]
 position = Vector2( 0, -6 )
 enabled = true
 cast_to = Vector2( -6, 0 )
-collision_mask = 3
 
 [node name="DownRight" type="RayCast2D" parent="RaycastController"]
 position = Vector2( 0, 8 )
 enabled = true
 cast_to = Vector2( 6, 0 )
-collision_mask = 3
 
 [node name="DownLeft" type="RayCast2D" parent="RaycastController"]
 position = Vector2( 0, 8 )
 enabled = true
 cast_to = Vector2( -6, 0 )
-collision_mask = 3
 
 [node name="LeftFeet" type="RayCast2D" parent="RaycastController"]
 position = Vector2( -4, 8 )
 enabled = true
 cast_to = Vector2( 0, 1 )
-collision_mask = 3
+collision_mask = 65
+
+[node name="LeftFeetHitTrigger" type="RayCast2D" parent="RaycastController"]
+position = Vector2( -4, 8 )
+enabled = true
+cast_to = Vector2( 0, 1 )
+collision_mask = 2147483776
 
 [node name="RightFeet" type="RayCast2D" parent="RaycastController"]
 position = Vector2( 4, 8 )
 enabled = true
 cast_to = Vector2( 0, 1 )
-collision_mask = 3
+collision_mask = 65
+
+[node name="RightFeetHitTrigger" type="RayCast2D" parent="RaycastController"]
+position = Vector2( 4, 8 )
+enabled = true
+cast_to = Vector2( 0, 1 )
+collision_mask = 128
+
+[node name="MovingPlatDetectorLeft" type="RayCast2D" parent="RaycastController"]
+position = Vector2( -5, -6 )
+enabled = true
+cast_to = Vector2( 0, 14 )
+collision_mask = 32
+
+[node name="MovingPlatDetectorRight" type="RayCast2D" parent="RaycastController"]
+position = Vector2( 5, -6 )
+enabled = true
+cast_to = Vector2( 0, 14 )
+collision_mask = 32
+
+[node name="MovingPlatDetectorDown" type="RayCast2D" parent="RaycastController"]
+position = Vector2( 4, 9 )
+enabled = true
+cast_to = Vector2( -8, 0 )
+collision_mask = 32
 
 [node name="TweenController" type="Node" parent="."]
 
@@ -667,8 +693,6 @@ collision_mask = 3
 [node name="GravityTween" type="Tween" parent="TweenController"]
 
 [node name="VSpeedTween" type="Tween" parent="TweenController"]
-
-[node name="PlayerLightTween" type="Tween" parent="TweenController"]
 
 [node name="TimerController" type="Node" parent="."]
 
@@ -686,7 +710,9 @@ one_shot = true
 wait_time = 0.05
 one_shot = true
 
-[node name="Camera" type="Camera2D" parent="."]
+[node name="Camera" type="Camera2D" parent="." groups=[
+"Camera",
+]]
 current = true
 limit_left = 0
 limit_top = 0
@@ -719,10 +745,6 @@ volume_db = 3.0
 stream = ExtResource( 5 )
 volume_db = -20.0
 
-[node name="PlayerLight" type="Light2D" parent="."]
-texture = ExtResource( 15 )
-energy = 0.0
-range_layer_min = -100
-shadow_enabled = true
+[node name="Light" parent="." instance=ExtResource( 15 )]
 [connection signal="timeout" from="TimerController/CoyoteTimeTimer" to="." method="end_coyote_time"]
 [connection signal="timeout" from="TimerController/LogJumpTimer" to="." method="unlog_jump"]

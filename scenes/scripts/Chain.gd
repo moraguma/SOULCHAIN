@@ -1,25 +1,16 @@
 extends RayCast2D
 
-
-var active = false
-
-
-onready var line = $Line2D
+var sticker = null
+var last_stick_pos = Vector2(0, 0)
 
 
 func _ready():
-	line.add_point(position)
-	line.add_point(position + cast_to)
+	if sticker != null:
+		last_stick_pos = sticker.position
 
 
-func _process(delta):
-	if active:
-		line.set_point_position(1, position + cast_to)
-
-
-func activate():
-	active = true
-
-
-func deactivate():
-	active = false
+func _physics_process(delta):
+	if sticker != null:
+		if last_stick_pos != sticker.position:
+			position += sticker.position - last_stick_pos
+			last_stick_pos = sticker.position

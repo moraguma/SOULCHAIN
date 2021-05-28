@@ -2,7 +2,7 @@
 
 [ext_resource path="res://scenes/scripts/CollectibleSoul.gd" type="Script" id=1]
 [ext_resource path="res://sprites/spritesheets/collectiblesoul.png" type="Texture" id=2]
-[ext_resource path="res://sprites/textures/playerlight.png" type="Texture" id=3]
+[ext_resource path="res://scenes/entities/Light.tscn" type="PackedScene" id=3]
 [ext_resource path="res://scenes/entities/Chain.tscn" type="PackedScene" id=4]
 [ext_resource path="res://sprites/textures/soultether.png" type="Texture" id=5]
 [ext_resource path="res://resources/shaders/soulfire.shader" type="Shader" id=6]
@@ -199,7 +199,9 @@ void fragment() {
 shader = SubResource( 21 )
 shader_param/color = Vector3( 0, 0, 0 )
 
-[node name="CollectibleSoul" type="Area2D"]
+[node name="CollectibleSoul" type="Area2D" groups=[
+"Resetter",
+]]
 collision_layer = 0
 collision_mask = 4
 script = ExtResource( 1 )
@@ -232,16 +234,12 @@ animation = "idle"
 position = Vector2( 0, 1 )
 shape = SubResource( 20 )
 
-[node name="Light" type="Light2D" parent="."]
-texture = ExtResource( 3 )
-energy = 0.8
-range_layer_min = -100
-shadow_enabled = true
-
 [node name="DrawingLine" type="Line2D" parent="."]
 material = SubResource( 22 )
 z_index = 7
 width = 15.0
 texture = ExtResource( 5 )
 texture_mode = 1
+
+[node name="Light" parent="." instance=ExtResource( 3 )]
 [connection signal="body_entered" from="." to="." method="start_collection"]

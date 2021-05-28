@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://scenes/scripts/SomewhereOldTiles.gd" type="Script" id=1]
+[ext_resource path="res://scenes/scripts/Gate.gd" type="Script" id=2]
+[ext_resource path="res://resources/tilemaps/somewhereold/gate.tres" type="TileSet" id=3]
+
+[node name="Gate" type="KinematicBody2D" groups=[
+"Resetter",
+]]
+script = ExtResource( 2 )
+
+[node name="Tiles" type="TileMap" parent="."]
+z_index = 10
+z_as_relative = false
+tile_set = ExtResource( 3 )
+cell_size = Vector2( 8, 8 )
+format = 1
+script = ExtResource( 1 )
+
+[node name="ActivatePosition" type="Node2D" parent="."]
+position = Vector2( 0, -80 )
+
+[node name="Tween" type="Tween" parent="."]
+playback_process_mode = 0

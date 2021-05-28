@@ -58,6 +58,7 @@ const GRAVITY = 0.09
 const HIGH_JUMP_GRAVITY = 0.032
 const WALL_SLIDE_GRAVITY = 0.1
 const SWING_GRAVITY = 0.05
+const MOVING_PLAT_SLIDE_GRAVITY = 0.1
 
 # TWEEN GRAVITY
 const WALL_JUMP_START_GRAVITY = 0
@@ -73,6 +74,7 @@ const IMPULSE_JUMP_END_GRAVITY = 0.09
 const V_MAX_SPEED = 190
 const WALL_SLIDE_V_MAX_SPEED = 40
 const SWING_V_MAX_SPEED = 300
+const MOVING_PLAT_SLIDE_V_MAX_SPEED = 15
 
 # TWEEN VERTICAL MAX SPEED
 const WALL_JUMP_START_V_MAX_SPEED = 0
@@ -105,8 +107,10 @@ const IMPULSE_JUMP_TWEEN_TIME = 0.25
 
 # OTHER --------------------
 const BURST_SPEED = 350
-const CHAIN_ELASTIC_CONSTANT = 100
+const CHAIN_ELASTIC_CONSTANT = 150
 
+const MAX_MOVING_PLAT_SPEED = 5
+const MOVING_PLAT_VELOCITY_MODIFIER = 1.8
 const SWING_SPEED_MULTIPLIER = 0.25
 const SMALL_VERTICAL_WALL_JUMP_MULTIPLIER = 0.5
 
@@ -124,9 +128,6 @@ const WALK_MIN_SPEED = 20
 const DEATH_EXPLODE_TIME = 0.4
 const DEATH_LINGER_TIME = 0.9
 const FEET_VECTOR = Vector2(0, 8)
-
-const PLAYER_LIGHT_MAX_ENERGY = 0.85
-const LIGHT_TRANSITION_TIME = 0.5
 # ------------------------------------------------
 
 # ------------------------------------------------
@@ -160,12 +161,6 @@ var bursting = false
 # ------------------------------------------------
 
 # ------------------------------------------------
-# VISUAL VARIABLES
-
-var light_enabled = false
-# ------------------------------------------------
-
-# ------------------------------------------------
 # NODES
 
 onready var parent = get_parent()
@@ -173,15 +168,12 @@ onready var raycast_controller = $RaycastController
 onready var sprite = $Sprite
 onready var animation_player = $AnimationPlayer
 onready var camera = $Camera
-onready var player_light = $PlayerLight
-var tilemaps = null
 
 # TWEENS 
 onready var h_acceleration_tween = $TweenController/HAccelerationTween
 onready var h_speed_tween = $TweenController/HSpeedTween
 onready var gravity_tween = $TweenController/GravityTween
 onready var v_speed_tween = $TweenController/VSpeedTween
-onready var player_light_tween = $TweenController/PlayerLightTween
 
 # TIMERS 
 onready var coyote_time_timer = $TimerController/CoyoteTimeTimer
@@ -198,7 +190,7 @@ onready var death_sound = $DeathSound
 
 func _ready():
 	if parent.name == "Base":
-		tilemaps = parent.get_node("Tiles").get_children()
+		
 		camera.limit_top = parent.min_y
 		camera.limit_left = parent.min_x
 		camera.limit_bottom = parent.max_y
@@ -295,6 +287,7 @@ func start_tweens():
 func add_jump_smoke():
 	var jump_particles = JumpParticles.instance()
 	jump_particles.position = position + FEET_VECTOR
+	jump_particles.velocity = raycast_controller.get_moving_plat_velocity()
 	parent.add_child(jump_particles)
 
 
@@ -315,19 +308,25 @@ func create_afterimage():
 		parent.add_child(afterimage)
 
 
+func get_moving_platform_speed():
+	return raycast_controller.get_moving_plat_velocity() * MOVING_PLAT_VELOCITY_MODIFIER
+
+
 func _movement_process(delta):
-	var on_floor = raycast_controller.is_on_floor()
-	var on_wall = is_on_wall()
+	var wall_normal = raycast_controller.get_wall_normal()
+	var on_floor = raycast_controller.is_on_floor() and not velocity[1] < 0
+	var on_wall = is_on_wall() or wall_normal.dot(raycast_controller.get_moving_plat_velocity()) > 0
 	var can_wall_jump = raycast_controller.is_on_wall()
 	var hook_fixed = false
 	var is_swinging = false
+	var moving_plat_vel = raycast_controller.get_moving_plat_velocity()
+	var is_sliding_on_moving_plat = wall_normal.dot(moving_plat_vel) > 0.5 and moving_plat_vel.distance_to(Vector2(0, 0)) > MAX_MOVING_PLAT_SPEED and not (velocity.dot(moving_plat_vel) > 0 and velocity.distance_to(Vector2(0, 0)) > moving_plat_vel.distance_to(Vector2(0, 0)))
 	if not has_hook:
 		hook_fixed = hook.is_fixed()
 		is_swinging = hook.player_is_tensioned()
 	
-	if on_floor and tilemaps != null:
-		for tilemap in tilemaps:
-			tilemap.rehook_tiles()
+	if on_floor:
+		get_tree().call_group("Tile", "rehook_tiles")
 	
 	if not can_jump and on_floor:
 		can_jump = true
@@ -372,7 +371,10 @@ func _movement_process(delta):
 	var aim_gravity
 	var aim_v_max_speed
 	
-	if on_wall and velocity[1] > 0:
+	if is_sliding_on_moving_plat:
+		aim_gravity = MOVING_PLAT_SLIDE_GRAVITY
+		aim_v_max_speed = MOVING_PLAT_SLIDE_V_MAX_SPEED
+	elif on_wall and velocity[1] > 0:
 		aim_gravity = WALL_SLIDE_GRAVITY
 		aim_v_max_speed = WALL_SLIDE_V_MAX_SPEED
 	elif is_swinging:
@@ -406,9 +408,16 @@ func _movement_process(delta):
 		log_jump()
 	
 	if jump_logged:
+		var add_h_vel = Vector2(0, 0)
+		var add_v_vel = Vector2(0 ,0)
+		
 		if can_jump or can_wall_jump or hook_fixed:
 			jump_logged = false
 			jump_sound.play()
+			
+			var add_mov_plat_vel = get_moving_platform_speed()
+			add_h_vel = Vector2(add_mov_plat_vel[0], 0)
+			add_v_vel = Vector2(0, add_mov_plat_vel[1])
 		
 		if can_jump:
 			can_jump = false
@@ -435,7 +444,7 @@ func _movement_process(delta):
 		elif can_wall_jump:
 			if velocity[1] < -MIN_IMPULSE_V_SPEED:
 				v_vel = WALL_JUMP_IMPULSE_V_SPEED * Vector2(0, -1)
-				h_vel = WALL_JUMP_IMPULSE_H_SPEED * raycast_controller.get_wall_normal()
+				h_vel = WALL_JUMP_IMPULSE_H_SPEED * wall_normal
 				
 				h_acceleration_tween.interpolate_property(self, "h_acceleration", WALL_JUMP_IMPULSE_START_H_ACCELERATION, WALL_JUMP_IMPULSE_END_H_ACCELERATION, WALL_JUMP_IMPULSE_TWEEN_TIME, Tween.TRANS_EXPO, Tween.EASE_IN)
 				h_speed_tween.interpolate_property(self, "h_max_speed", WALL_JUMP_IMPULSE_START_H_MAX_SPEED, WALL_JUMP_IMPULSE_END_H_MAX_SPEED, WALL_JUMP_IMPULSE_TWEEN_TIME, Tween.TRANS_EXPO, Tween.EASE_IN)
@@ -445,7 +454,7 @@ func _movement_process(delta):
 				start_tweens()
 			else:
 				v_vel = WALL_JUMP_V_SPEED * Vector2(0, -1)
-				h_vel = WALL_JUMP_H_SPEED * raycast_controller.get_wall_normal()
+				h_vel = WALL_JUMP_H_SPEED * wall_normal
 				if velocity[1] < 0:
 					v_vel += Vector2(0, velocity[1]) * SMALL_VERTICAL_WALL_JUMP_MULTIPLIER
 				
@@ -464,12 +473,23 @@ func _movement_process(delta):
 			if is_swinging:
 				h_vel += Vector2((velocity * SWING_SPEED_MULTIPLIER)[0], 0)
 				v_vel += Vector2(0, (velocity * SWING_SPEED_MULTIPLIER)[1])
+		
+		h_vel += add_h_vel
+		v_vel += add_v_vel
 	
 	if Input.is_action_just_pressed("hook"):
 		if has_hook:
 			has_hook = false
 			
 			animation_player.force_play_animation("spin")
+			
+			var add_h_vel = Vector2(0, 0)
+			var add_v_vel = Vector2(0, 0)
+			
+			if can_jump or can_wall_jump:
+				var add_mov_plat_vel = get_moving_platform_speed()
+				add_h_vel = Vector2(add_mov_plat_vel[0], 0)
+				add_v_vel = Vector2(0, add_mov_plat_vel[1])
 			
 			if can_jump:
 				can_jump = false
@@ -482,7 +502,7 @@ func _movement_process(delta):
 			elif can_wall_jump:
 				if velocity[1] < -MIN_IMPULSE_V_SPEED:
 					v_vel = WALL_SPIN_JUMP_IMPULSE_V_SPEED * Vector2(0, -1)
-					h_vel = WALL_SPIN_JUMP_IMPULSE_H_SPEED * raycast_controller.get_wall_normal()
+					h_vel = WALL_SPIN_JUMP_IMPULSE_H_SPEED * wall_normal
 					
 					h_acceleration_tween.interpolate_property(self, "h_acceleration", WALL_JUMP_IMPULSE_START_H_ACCELERATION, WALL_JUMP_IMPULSE_END_H_ACCELERATION, WALL_JUMP_IMPULSE_TWEEN_TIME, Tween.TRANS_EXPO, Tween.EASE_IN)
 					h_speed_tween.interpolate_property(self, "h_max_speed", WALL_JUMP_IMPULSE_START_H_MAX_SPEED, WALL_JUMP_IMPULSE_END_H_MAX_SPEED, WALL_JUMP_IMPULSE_TWEEN_TIME, Tween.TRANS_EXPO, Tween.EASE_IN)
@@ -492,7 +512,7 @@ func _movement_process(delta):
 					start_tweens()
 				else:
 					v_vel = WALL_SPIN_JUMP_V_SPEED * Vector2(0, -1)
-					h_vel = WALL_SPIN_JUMP_H_SPEED * raycast_controller.get_wall_normal()
+					h_vel = WALL_SPIN_JUMP_H_SPEED * wall_normal
 					if velocity[1] < 0:
 						v_vel += Vector2(0, velocity[1]) * SMALL_VERTICAL_WALL_JUMP_MULTIPLIER
 					
@@ -502,6 +522,9 @@ func _movement_process(delta):
 					v_speed_tween.interpolate_property(self, "v_max_speed", WALL_JUMP_START_V_MAX_SPEED, WALL_JUMP_END_V_MAX_SPEED, WALL_JUMP_TWEEN_TIME, Tween.TRANS_EXPO, Tween.EASE_IN)
 					
 					start_tweens()
+			
+			h_vel += add_h_vel
+			v_vel += add_v_vel
 			
 			var hook_dir = dir
 			if hook_dir == Vector2(0, 0):
@@ -514,9 +537,6 @@ func _movement_process(delta):
 			hook.position = position
 			hook.dir = hook_dir
 			parent.add_child(hook)
-			
-			if light_enabled:
-				hook.turn_on_light()
 		
 		else:
 			if hook.is_fixed():
@@ -575,6 +595,9 @@ func _movement_process(delta):
 	if not has_hook:
 		velocity += delta * CHAIN_ELASTIC_CONSTANT * hook.get_deformation_vector()
 	
+	if is_sliding_on_moving_plat:
+		velocity[0] = moving_plat_vel[0]
+	
 	velocity = move_and_slide(velocity, Vector2(0, -1))
 	
 	if get_slide_count() >= 1:
@@ -586,6 +609,8 @@ func _movement_process(delta):
 
 
 func _animation_process():
+	var wall_normal = raycast_controller.get_wall_normal()
+	
 	if dir.dot(velocity) > 0 or not is_on_floor():
 		if velocity[0] > TURN_SPEED_MINIMUM:
 			sprite.flip_h = false
@@ -597,10 +622,10 @@ func _animation_process():
 			animation_player.try_play_animation("idle")
 		else:
 			animation_player.try_play_animation("walk")
-	elif (is_on_wall() and velocity[1] > 0) or not has_hook and raycast_controller.is_on_wall():
+	elif ((is_on_wall() and velocity[1] > 0) or wall_normal.dot(raycast_controller.get_moving_plat_velocity()) > 0) or not has_hook and raycast_controller.is_on_wall():
 		animation_player.try_play_animation("wall_hit")
 		
-		var dir = raycast_controller.get_wall_normal()
+		var dir = wall_normal
 		if dir[0] > 0:
 			sprite.flip_h = false
 		elif dir[0] < 0:
@@ -654,26 +679,6 @@ func get_shot(dir, pos):
 		animation_player.force_play_animation("burst_diagonal_up")
 	else: 
 		animation_player.force_play_animation("burst_up")
-
-
-func turn_on_light():
-	player_light_tween.stop_all()
-	player_light_tween.interpolate_property(player_light, "energy", 0, PLAYER_LIGHT_MAX_ENERGY, LIGHT_TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	player_light_tween.start()
-	
-	light_enabled = true
-
-
-func turn_off_light():
-	player_light_tween.stop_all()
-	player_light_tween.interpolate_property(player_light, "energy", PLAYER_LIGHT_MAX_ENERGY, 0, LIGHT_TRANSITION_TIME, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	player_light_tween.start()
-	
-	light_enabled = false
-
-
-func update_tilemap():
-	tilemaps = parent.get_tilemaps()
 
 
 func death(v):
