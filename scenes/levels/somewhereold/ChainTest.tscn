@@ -133,11 +133,7 @@ position = Vector2( 0, -72 )
 [node name="Light" parent="." instance=ExtResource( 2 )]
 
 [editable path="Transitions/TransitionAreaRight"]
-
 [editable path="Transitions/TransitionAreaLeft"]
-
 [editable path="PullableChain"]
-
 [editable path="Gate"]
-
 [editable path="Gate2"]

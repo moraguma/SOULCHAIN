@@ -213,6 +213,7 @@ position = Vector2( 0, 1 )
 z_index = 10
 z_as_relative = false
 lifetime = 0.8
+visibility_rect = Rect2( -3.94043, -31.9464, 7.93066, 35.5966 )
 process_material = SubResource( 2 )
 
 [node name="Sprite" type="AnimatedSprite" parent="."]
@@ -242,4 +243,5 @@ texture = ExtResource( 5 )
 texture_mode = 1
 
 [node name="Light" parent="." instance=ExtResource( 3 )]
+
 [connection signal="body_entered" from="." to="." method="start_collection"]

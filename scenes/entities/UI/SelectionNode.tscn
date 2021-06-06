@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://scenes/scripts/DialogueSelectionNode.gd" type="Script" id=1]
+
+[node name="SelectionNode" type="Polygon2D"]
+scale = Vector2( 0.3, 0.3 )
+color = Color( 0.407843, 0.407843, 0.407843, 1 )
+polygon = PoolVector2Array( 16, 0, 15, -5, 13, -10, 10, -13, 5, -15, 0, -16, -5, -15, -10, -13, -13, -10, -15, -5, -16, 0, -15, 5, -13, 10, -10, 13, -5, 15, 0, 16, 5, 15, 10, 13, 13, 10, 15, 5 )
+script = ExtResource( 1 )
+
+[node name="SelectedNode" type="Polygon2D" parent="."]
+scale = Vector2( 1e-05, 1e-05 )
+polygon = PoolVector2Array( 16, 0, 15, -5, 13, -10, 10, -13, 5, -15, 0, -16, -5, -15, -10, -13, -13, -10, -15, -5, -16, 0, -15, 5, -13, 10, -10, 13, -5, 15, 0, 16, 5, 15, 10, 13, 13, 10, 15, 5 )
+
+[node name="Tween" type="Tween" parent="."]
+
+[node name="SpawnTween" type="Tween" parent="."]

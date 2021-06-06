@@ -1,0 +1,49 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://scenes/entities/Light.tscn" type="PackedScene" id=1]
+[ext_resource path="res://resources/shaders/soulfire.shader" type="Shader" id=2]
+[ext_resource path="res://sprites/textures/somewhereold/lightmount.png" type="Texture" id=3]
+[ext_resource path="res://sprites/textures/somewhereold/Light.png" type="Texture" id=4]
+
+[sub_resource type="ParticlesMaterial" id=1]
+lifetime_randomness = 0.5
+emission_shape = 1
+emission_sphere_radius = 3.0
+flag_disable_z = true
+gravity = Vector3( 0, -98, 0 )
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+radial_accel = -5.0
+color = Color( 0.623529, 0.886275, 0.282353, 1 )
+hue_variation_random = 0.1
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = ExtResource( 2 )
+shader_param/transparent = Plane( 0, 0, 0, 0 )
+shader_param/inner = Plane( 0.784313, 0.921568, 0.262745, 1 )
+shader_param/outer = Plane( 0.623529, 0.886274, 0.282352, 1 )
+shader_param/OCTAVES = 4
+
+[node name="LightMount" type="Node2D"]
+z_index = 6
+z_as_relative = false
+
+[node name="Light" parent="." instance=ExtResource( 1 )]
+position = Vector2( 0, 4 )
+
+[node name="FloatUpParticles" type="Particles2D" parent="."]
+position = Vector2( 0, -1 )
+z_index = 6
+z_as_relative = false
+lifetime = 0.8
+visibility_rect = Rect2( -2.98225, -31.7063, 5.96936, 34.6509 )
+process_material = SubResource( 1 )
+
+[node name="LightSprite" type="Sprite" parent="."]
+material = SubResource( 2 )
+position = Vector2( 0, -2 )
+texture = ExtResource( 4 )
+
+[node name="MountSprite" type="Sprite" parent="."]
+position = Vector2( 0, 4 )
+texture = ExtResource( 3 )

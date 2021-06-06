@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://resources/tilemaps/somewhereold/decoration.tres" type="TileSet" id=1]
 [ext_resource path="res://resources/tilemaps/somewhereold/tiles.tres" type="TileSet" id=2]
@@ -9,7 +9,6 @@
 [ext_resource path="res://scenes/entities/UniformMovingPlatform.tscn" type="PackedScene" id=7]
 [ext_resource path="res://scenes/entities/TransitionAreaVertical.tscn" type="PackedScene" id=8]
 [ext_resource path="res://scenes/entities/visual/SomewhereOldFGParticles.tscn" type="PackedScene" id=9]
-[ext_resource path="res://scenes/entities/Player.tscn" type="PackedScene" id=10]
 [ext_resource path="res://LevelBase.gd" type="Script" id=11]
 [ext_resource path="res://scenes/scripts/SomewhereOldTiles.gd" type="Script" id=12]
 [ext_resource path="res://resources/tilemaps/somewhereold/brickwalls.tres" type="TileSet" id=13]
@@ -132,9 +131,5 @@ position = Vector2( 320, 88 )
 COLLECTION_DISTANCE = 220
 testing_mode = true
 
-[node name="Player" parent="." instance=ExtResource( 10 )]
-position = Vector2( 160, 184 )
-
 [editable path="UniformMovingPlatform"]
-
 [editable path="Transitions/TransitionAreaDown"]

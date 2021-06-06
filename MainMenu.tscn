@@ -11,10 +11,10 @@ FirstLevel = ExtResource( 17 )
 [node name="Main" type="Node2D" parent="."]
 
 [node name="Save1" type="Button" parent="Main"]
-margin_left = 64.0
-margin_top = 64.0
-margin_right = 128.0
-margin_bottom = 96.0
+margin_left = 104.0
+margin_top = 336.0
+margin_right = 632.0
+margin_bottom = 600.0
 text = "Save 1"
 script = ExtResource( 13 )
 __meta__ = {
@@ -23,10 +23,10 @@ __meta__ = {
 save_name = "save01"
 
 [node name="Save2" type="Button" parent="Main"]
-margin_left = 160.0
-margin_top = 64.0
-margin_right = 224.0
-margin_bottom = 96.0
+margin_left = 696.0
+margin_top = 320.0
+margin_right = 1224.0
+margin_bottom = 584.0
 text = "Save 2"
 script = ExtResource( 13 )
 __meta__ = {
@@ -35,16 +35,17 @@ __meta__ = {
 save_name = "save02"
 
 [node name="Save3" type="Button" parent="Main"]
-margin_left = 256.0
-margin_top = 64.0
-margin_right = 320.0
-margin_bottom = 96.0
+margin_left = 1296.0
+margin_top = 328.0
+margin_right = 1824.0
+margin_bottom = 592.0
 text = "Save 3"
 script = ExtResource( 13 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 save_name = "save03"
+
 [connection signal="pressed" from="Main/Save1" to="Main/Save1" method="start_level"]
 [connection signal="pressed" from="Main/Save2" to="Main/Save2" method="start_level"]
 [connection signal="pressed" from="Main/Save3" to="Main/Save3" method="start_level"]

@@ -1,0 +1,94 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://scenes/entities/TransitionAreaVertical.tscn" type="PackedScene" id=1]
+[ext_resource path="res://scenes/entities/visual/SomewhereOldFGParticles.tscn" type="PackedScene" id=2]
+[ext_resource path="res://scenes/entities/visual/SomewhereOldBGParticles.tscn" type="PackedScene" id=3]
+[ext_resource path="res://LevelBase.gd" type="Script" id=4]
+[ext_resource path="res://scenes/scripts/SomewhereOldTiles.gd" type="Script" id=5]
+[ext_resource path="res://resources/tilemaps/somewhereold/decoration.tres" type="TileSet" id=6]
+[ext_resource path="res://resources/tilemaps/somewhereold/tiles.tres" type="TileSet" id=7]
+[ext_resource path="res://resources/tilemaps/somewhereold/platforms.tres" type="TileSet" id=8]
+[ext_resource path="res://resources/tilemaps/somewhereold/walls.tres" type="TileSet" id=9]
+[ext_resource path="res://resources/tilemaps/somewhereold/spikes.tres" type="TileSet" id=10]
+[ext_resource path="res://resources/tilemaps/somewhereold/brickwalls.tres" type="TileSet" id=11]
+
+[node name="Base" type="Node2D"]
+script = ExtResource( 4 )
+
+[node name="Tiles" type="TileMap" parent="." groups=[
+"Tile",
+]]
+z_index = 11
+z_as_relative = false
+tile_set = ExtResource( 7 )
+cell_size = Vector2( 8, 8 )
+collision_mask = 0
+format = 1
+script = ExtResource( 5 )
+
+[node name="Platforms" type="TileMap" parent="."]
+z_index = 10
+tile_set = ExtResource( 8 )
+cell_size = Vector2( 8, 8 )
+collision_layer = 64
+collision_mask = 0
+format = 1
+
+[node name="Walls" type="TileMap" parent="."]
+z_index = 4
+z_as_relative = false
+tile_set = ExtResource( 9 )
+cell_size = Vector2( 8, 8 )
+collision_layer = 0
+collision_mask = 0
+format = 1
+
+[node name="BrickWall" type="TileMap" parent="."]
+z_index = 4
+z_as_relative = false
+tile_set = ExtResource( 11 )
+cell_size = Vector2( 8, 8 )
+collision_layer = 0
+collision_mask = 0
+format = 1
+
+[node name="Spikes" type="TileMap" parent="."]
+z_index = 6
+z_as_relative = false
+tile_set = ExtResource( 10 )
+cell_size = Vector2( 8, 8 )
+collision_layer = 2
+collision_mask = 0
+format = 1
+
+[node name="Decoration" type="TileMap" parent="."]
+z_index = 6
+z_as_relative = false
+tile_set = ExtResource( 6 )
+cell_size = Vector2( 8, 8 )
+format = 1
+
+[node name="SomewhereOldBGParticles" parent="." instance=ExtResource( 3 )]
+position = Vector2( 192, 216 )
+
+[node name="SomewhereOldFGParticles" parent="." instance=ExtResource( 2 )]
+position = Vector2( 192, 216 )
+
+[node name="Transitions" type="Node2D" parent="."]
+
+[node name="TransitionAreaDown" parent="Transitions" instance=ExtResource( 1 )]
+position = Vector2( 192, 216 )
+transition_code = "Up"
+
+[node name="SpawnPoint" parent="Transitions/TransitionAreaDown" index="1"]
+position = Vector2( 32, -24 )
+
+[node name="TransitionAreaUp" parent="Transitions" instance=ExtResource( 1 )]
+position = Vector2( 192, 0 )
+transition_code = "Down"
+
+[node name="SpawnPoint" parent="Transitions/TransitionAreaUp" index="1"]
+position = Vector2( -32, 40 )
+
+[editable path="Transitions/TransitionAreaDown"]
+[editable path="Transitions/TransitionAreaUp"]

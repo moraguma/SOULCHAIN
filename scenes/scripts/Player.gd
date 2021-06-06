@@ -120,6 +120,8 @@ const SMALL_VERTICAL_WALL_JUMP_MULTIPLIER = 0.5
 # ------------------------------------------------
 # VISUAL CONSTANTS
 
+const CUTSCENE_EXTRA_FALLING_SPEED = 20
+const CUTSCENE_GRAVITY = 500
 const DEATH_DISTANCE = 16
 const TOTAL_AFTERIMAGES = 3
 const TURN_SPEED_MINIMUM = 2
@@ -128,6 +130,7 @@ const WALK_MIN_SPEED = 20
 const DEATH_EXPLODE_TIME = 0.4
 const DEATH_LINGER_TIME = 0.9
 const FEET_VECTOR = Vector2(0, 8)
+const CUTSCENE_END_WAIT_TIME = 0.1
 # ------------------------------------------------
 
 # ------------------------------------------------
@@ -145,6 +148,7 @@ var gravity = 0
 var v_max_speed = 0
 var jump_v_speed = 0
 
+var cutscene_mode = false
 var can_wall_jump = false
 var on_wall = false
 var on_floor = false
@@ -158,22 +162,26 @@ var can_jump = true
 var jump_logged = false
 var wall_jumping = false
 var bursting = false
+var dialogue_target = null
 # ------------------------------------------------
 
 # ------------------------------------------------
 # NODES
 
 onready var parent = get_parent()
+onready var main = parent.main
 onready var raycast_controller = $RaycastController
 onready var sprite = $Sprite
 onready var animation_player = $AnimationPlayer
 onready var camera = $Camera
+onready var dialogue_sticker = $DialogueSticker
 
 # TWEENS 
 onready var h_acceleration_tween = $TweenController/HAccelerationTween
 onready var h_speed_tween = $TweenController/HSpeedTween
 onready var gravity_tween = $TweenController/GravityTween
 onready var v_speed_tween = $TweenController/VSpeedTween
+onready var cutscene_tween = $TweenController/CutsceneTween
 
 # TIMERS 
 onready var coyote_time_timer = $TimerController/CoyoteTimeTimer
@@ -188,14 +196,6 @@ onready var walk_sound = $WalkSound
 onready var death_sound = $DeathSound
 # ------------------------------------------------
 
-func _ready():
-	if parent.name == "Base":
-		
-		camera.limit_top = parent.min_y
-		camera.limit_left = parent.min_x
-		camera.limit_bottom = parent.max_y
-		camera.limit_right = parent.max_x
-
 # Physics processing. Encompasses player input, movement and animation
 func _physics_process(delta):
 	if Input.is_action_just_pressed("menu"):
@@ -203,15 +203,17 @@ func _physics_process(delta):
 	
 	if not is_transitioning:
 		if not is_dead:
-			if Input.is_action_just_pressed("restart"):
-				death(Vector2(0, 0))
-			
-			_movement_process(delta)
-			_animation_process()
-			
-			if parent.name != "Base":
+			if not cutscene_mode:
+				if Input.is_action_just_pressed("restart"):
+					death(Vector2(0, 0))
+				
+				_movement_process(delta)
+				_animation_process()
+				
 				if not parent.is_inside(position):
 					death(Vector2(0, -3))
+			else:
+				_cutscene_process()
 	else:
 		if is_on_floor():
 			animation_player.try_play_animation("walk")
@@ -314,8 +316,8 @@ func get_moving_platform_speed():
 
 func _movement_process(delta):
 	var wall_normal = raycast_controller.get_wall_normal()
-	var on_floor = raycast_controller.is_on_floor() and not velocity[1] < 0
-	var on_wall = is_on_wall() or wall_normal.dot(raycast_controller.get_moving_plat_velocity()) > 0
+	on_floor = raycast_controller.is_on_floor() and not velocity[1] < 0
+	on_wall = is_on_wall() or wall_normal.dot(raycast_controller.get_moving_plat_velocity()) > 0
 	var can_wall_jump = raycast_controller.is_on_wall()
 	var hook_fixed = false
 	var is_swinging = false
@@ -470,7 +472,7 @@ func _movement_process(delta):
 			
 			v_vel = HOOK_JUMP_V_SPEED * Vector2(0, -1)
 			
-			if is_swinging:
+			if hook.player_is_almost_tensioned():
 				h_vel += Vector2((velocity * SWING_SPEED_MULTIPLIER)[0], 0)
 				v_vel += Vector2(0, (velocity * SWING_SPEED_MULTIPLIER)[1])
 		
@@ -705,3 +707,81 @@ func death(v):
 	yield(afterimage_timer, "timeout")
 	
 	parent.respawn()
+
+
+func _cutscene_process():
+	move_and_slide(velocity)
+
+
+func set_dialogue_target(target):
+	dialogue_target = target
+
+
+func delete_dialogue_target():
+	dialogue_target = null
+
+
+func start_cutscene_and_walk_to(x_pos, turned_to_right_after = true):
+	start_cutscene()
+	if not on_floor:
+		yield(cutscene_tween, "tween_completed")
+	cutscene_walk_to_x(x_pos, turned_to_right_after)
+
+
+func start_cutscene():
+	walk_sound.stop()
+	
+	dir = Vector2(0, 0)
+	
+	if hook != null:
+		hook.get_collected()
+	
+	cutscene_mode = true
+	
+	if not on_floor:
+		animation_player.force_play_animation("fall")
+		
+		var floor_distance = raycast_controller.get_distance_to_floor()
+		var final_velocity = Vector2(0, sqrt(pow(velocity[1], 2) + 2 * CUTSCENE_GRAVITY * floor_distance) + CUTSCENE_EXTRA_FALLING_SPEED)
+		var tween_time = (-velocity[1] + final_velocity[1])/(CUTSCENE_GRAVITY)
+		cutscene_tween.interpolate_property(self, "velocity", Vector2(0, velocity[1]), final_velocity, tween_time, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		cutscene_tween.start()
+		
+		yield(cutscene_tween, "tween_completed")
+		
+		velocity = Vector2(0, 0)
+		
+		animation_player.force_play_animation("land")
+		land_sound.play()
+		on_floor = true
+		add_jump_smoke()
+	animation_player.try_play_animation("idle")
+
+
+func cutscene_walk_to_x(x_pos, turned_to_right_after = true):
+	walk_sound.play()
+	
+	if position[0] != x_pos:
+		animation_player.force_play_animation("walk")
+		if position[0] - x_pos > 0:
+			sprite.flip_h = true
+		elif position[0] - x_pos < 0:
+			sprite.flip_h = false
+	
+	cutscene_tween.interpolate_property(self, "position", position, Vector2(x_pos, position[1]), abs(x_pos - position[0])/H_MAX_SPEED, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	cutscene_tween.start()
+	
+	yield(cutscene_tween, "tween_completed")
+	
+	walk_sound.stop()
+	animation_player.play("idle")
+	velocity = Vector2(0, 0)
+	sprite.flip_h = not turned_to_right_after
+
+
+func end_cutscene():
+	coyote_time_timer.start(CUTSCENE_END_WAIT_TIME)
+	yield(coyote_time_timer, "timeout")
+	
+	can_jump = true
+	cutscene_mode = false

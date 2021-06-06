@@ -580,8 +580,8 @@ DeathParticles = ExtResource( 16 )
 
 [node name="Sprite" type="Sprite" parent="."]
 texture = ExtResource( 1 )
-vframes = 16
 hframes = 8
+vframes = 16
 frame = 80
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
@@ -694,6 +694,8 @@ collision_mask = 32
 
 [node name="VSpeedTween" type="Tween" parent="TweenController"]
 
+[node name="CutsceneTween" type="Tween" parent="TweenController"]
+
 [node name="TimerController" type="Node" parent="."]
 
 [node name="CoyoteTimeTimer" type="Timer" parent="TimerController"]
@@ -728,6 +730,14 @@ drag_margin_right = 0.1
 drag_margin_bottom = 0.1
 script = ExtResource( 13 )
 
+[node name="HOffsetTween" type="Tween" parent="Camera"]
+
+[node name="VOffsetTween" type="Tween" parent="Camera"]
+
+[node name="XLimitTween" type="Tween" parent="Camera"]
+
+[node name="YLimitTween" type="Tween" parent="Camera"]
+
 [node name="DeathSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 10 )
 
@@ -746,5 +756,9 @@ stream = ExtResource( 5 )
 volume_db = -20.0
 
 [node name="Light" parent="." instance=ExtResource( 15 )]
+
+[node name="DialogueSticker" type="Node2D" parent="."]
+position = Vector2( 0, -11 )
+
 [connection signal="timeout" from="TimerController/CoyoteTimeTimer" to="." method="end_coyote_time"]
 [connection signal="timeout" from="TimerController/LogJumpTimer" to="." method="unlog_jump"]

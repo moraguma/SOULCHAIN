@@ -1,6 +1,6 @@
 [gd_resource type="Resource" load_steps=3 format=2]
 
-[ext_resource path="res://scenes/levels/somewhereold/ChainTest.tscn" type="PackedScene" id=1]
+[ext_resource path="res://scenes/levels/somewhereold/SleepwalkersPlateau.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/scripts/resources/GameSave.gd" type="Script" id=2]
 
 [resource]
@@ -9,8 +9,11 @@ Transition = ExtResource( 1 )
 transition_code = "Left"
 is_light_enabled = true
 collectible_flags = {
-"SO1": true
+"SO1": false
 }
 world_flags = {
+"test": false
+}
+dialogue_flags = {
 "test": false
 }

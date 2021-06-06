@@ -18,13 +18,14 @@ var sprite
 var camera
 var sprite_flip_h
 
-onready var main = get_parent()
+#onready var main = get_parent()
+#onready var main = get_parent().get_parent()
+onready var main = get_parent().get_parent().get_parent()
 
 onready var start_time = OS.get_ticks_msec()
 
+onready var viewport_container = get_parent().get_parent()
 onready var tween = $Tween
-onready var camera_x_tween = $CameraXTween
-onready var camera_y_tween = $CameraYTween
 
 
 func spawn(Transition, transition_code):
@@ -36,13 +37,13 @@ func spawn(Transition, transition_code):
 	
 	current_area = Transition.instance()
 	add_child(current_area)
-	current_area.initialize_transitions()
 	
 	var current_transition = current_area.get_node("Transitions").get_node("TransitionArea" + transition_code)
 	
 	respawn_position = current_area.position + current_transition.spawn_point
 	sprite_flip_h = not current_transition.facing_right_on_respawn
 	
+	camera.set_area_limit(current_area.max_y, current_area.min_y, current_area.min_x, current_area.max_x)
 	camera.limit_left = current_area.min_x
 	camera.limit_right = current_area.max_x
 	camera.limit_top = current_area.min_y
@@ -50,6 +51,8 @@ func spawn(Transition, transition_code):
 	
 	player.position = respawn_position
 	sprite.flip_h = sprite_flip_h
+	
+	current_area.initialize_transitions()
 
 func transition(Transition, transition_code, transition_area):
 	main.update_room(Transition, transition_code)
@@ -67,19 +70,7 @@ func transition(Transition, transition_code, transition_area):
 	
 	var camera_screen_center = camera.get_camera_screen_center()
 	
-	if past_area.position[1] > current_area.position[1]:
-		camera_y_tween.interpolate_property(camera, "limit_bottom", camera_screen_center[1] + 108, current_area.position[1] + current_area.max_y, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
-		camera.limit_top = current_area.position[1] + current_area.min_y
-	else:
-		camera_y_tween.interpolate_property(camera, "limit_top", camera_screen_center[1] - 108, current_area.position[1] + current_area.min_y, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
-		camera.limit_bottom = current_area.position[1] + current_area.max_y
-	
-	if past_area.position[0] > current_area.position[0]:
-		camera_x_tween.interpolate_property(camera, "limit_right", camera_screen_center[0] + 192, current_area.position[0] + current_area.max_x, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
-		camera.limit_left = current_area.position[0] + current_area.min_x
-	else:
-		camera_x_tween.interpolate_property(camera, "limit_left", camera_screen_center[0] - 192, current_area.position[0] + current_area.min_x, TRANSITION_TIME, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
-		camera.limit_right = current_area.position[0] + current_area.max_x
+	camera.set_area_limit(current_area.position[1] + current_area.max_y, current_area.position[1] + current_area.min_y, current_area.position[0] + current_area.min_x, current_area.position[0] + current_area.max_x)
 	
 	player.is_transitioning = true
 	
@@ -108,8 +99,6 @@ func transition(Transition, transition_code, transition_area):
 	camera.drag_margin_bottom = 1
 	
 	tween.start()
-	camera_x_tween.start()
-	camera_y_tween.start()
 	
 	yield(tween, "tween_all_completed")
 	player.is_transitioning = false
@@ -126,10 +115,6 @@ func transition(Transition, transition_code, transition_area):
 
 
 func respawn():
-	for node in get_tree().get_nodes_in_group("Resetter"):
-		if current_area.is_a_parent_of(node):
-			node.reset()
-	
 	total_deaths += 1
 	
 	var del_player = player
@@ -137,7 +122,13 @@ func respawn():
 	
 	del_player.force_recover_hook()
 	
-	camera = player.get_node("Camera")
+	var new_camera = player.get_node("Camera")
+	new_camera.area_limit_left = camera.area_limit_left
+	new_camera.area_limit_right = camera.area_limit_right
+	new_camera.area_limit_top = camera.area_limit_top
+	new_camera.area_limit_bottom = camera.area_limit_bottom
+	
+	camera = new_camera
 	sprite = player.get_node("Sprite")
 	
 	var old_camera = del_player.get_node("Camera")
@@ -153,23 +144,25 @@ func respawn():
 	sprite.flip_h = sprite_flip_h
 	
 	add_child(player)
+	
+	get_tree().call_group("Resetter", "reset")
 
 
 func get_player():
 	return player
 
 
+func get_main():
+	return main
+
+
 func is_inside(pos):
-	return pos[0] > camera.limit_left - LEFT_TOLLERANCE and pos[0] < camera.limit_right + RIGHT_TOLLERANCE and pos[1] < camera.limit_bottom + BOTTOM_TOLLERANCE and pos[1] > camera.limit_top - TOP_TOLLERANCE
+	return pos[0] > camera.area_limit_left - LEFT_TOLLERANCE and pos[0] < camera.area_limit_right + RIGHT_TOLLERANCE and pos[1] < camera.area_limit_bottom + BOTTOM_TOLLERANCE and pos[1] > camera.area_limit_top - TOP_TOLLERANCE
 
 
 func back_to_menu():
-	get_parent().back_to_menu()
-	queue_free()
-
-
-func back_to_credits():
-	get_parent().call_deferred("back_to_credits")
+	main.back_to_menu()
+	get_tree().call_group("Dialogue", "queue_free")
 	queue_free()
 
 

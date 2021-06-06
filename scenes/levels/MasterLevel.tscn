@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=19 format=2]
 
 [ext_resource path="res://scenes/levels/somewhereold/SleepwalkersPlateau.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/levels/somewhereold/SleepParalysis.tscn" type="PackedScene" id=2]
@@ -7,6 +7,17 @@
 [ext_resource path="res://scenes/levels/somewhereold/WakingCall.tscn" type="PackedScene" id=5]
 [ext_resource path="res://scenes/levels/somewhereold/SleepwalkersDescent.tscn" type="PackedScene" id=6]
 [ext_resource path="res://scenes/levels/somewhereold/SleepersWake.tscn" type="PackedScene" id=7]
+[ext_resource path="res://scenes/levels/somewhereold/WhistlingPeaks.tscn" type="PackedScene" id=8]
+[ext_resource path="res://scenes/levels/somewhereold/WhistlingPeaks2.tscn" type="PackedScene" id=9]
+[ext_resource path="res://scenes/levels/somewhereold/WhistleblowersCage.tscn" type="PackedScene" id=10]
+[ext_resource path="res://scenes/levels/somewhereold/WhistleblowersOutpost.tscn" type="PackedScene" id=11]
+[ext_resource path="res://scenes/levels/somewhereold/WhistlingPeaks3.tscn" type="PackedScene" id=12]
+[ext_resource path="res://scenes/levels/somewhereold/WhistleblowersHighWall.tscn" type="PackedScene" id=13]
+[ext_resource path="res://scenes/levels/somewhereold/WhistleblowersTrove.tscn" type="PackedScene" id=14]
+[ext_resource path="res://scenes/levels/somewhereold/TheSpine.tscn" type="PackedScene" id=15]
+[ext_resource path="res://scenes/levels/somewhereold/TheSpine2.tscn" type="PackedScene" id=16]
+[ext_resource path="res://scenes/levels/somewhereold/TheSpine3.tscn" type="PackedScene" id=17]
+[ext_resource path="res://scenes/levels/somewhereold/TheSpine4.tscn" type="PackedScene" id=18]
 
 [node name="Base" type="Node2D"]
 
@@ -29,3 +40,36 @@ position = Vector2( 2688, 344 )
 
 [node name="Base7" parent="." instance=ExtResource( 7 )]
 position = Vector2( 3072, 600 )
+
+[node name="Base8" parent="." instance=ExtResource( 8 )]
+position = Vector2( 3456, 1352 )
+
+[node name="Base9" parent="." instance=ExtResource( 9 )]
+position = Vector2( 3840, 1416 )
+
+[node name="Base10" parent="." instance=ExtResource( 10 )]
+position = Vector2( 3456, 920 )
+
+[node name="Base11" parent="." instance=ExtResource( 11 )]
+position = Vector2( 3840, 872 )
+
+[node name="Base12" parent="." instance=ExtResource( 12 )]
+position = Vector2( 4224, 1536 )
+
+[node name="Base13" parent="." instance=ExtResource( 13 )]
+position = Vector2( 3456, 600 )
+
+[node name="Base14" parent="." instance=ExtResource( 14 )]
+position = Vector2( 4224, 816 )
+
+[node name="Base15" parent="." instance=ExtResource( 15 )]
+position = Vector2( 4608, 1480 )
+
+[node name="Base16" parent="." instance=ExtResource( 16 )]
+position = Vector2( 4608, 1256 )
+
+[node name="Base17" parent="." instance=ExtResource( 17 )]
+position = Vector2( 4608, 1048 )
+
+[node name="Base" parent="Base17" instance=ExtResource( 18 )]
+position = Vector2( 0, -432 )

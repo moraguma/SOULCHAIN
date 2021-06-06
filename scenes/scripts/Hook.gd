@@ -13,11 +13,13 @@ const COLLECT_DISTANCE = 15
 const MIN_SIZE_FOR_REAL_DIR = 8
 
 const FORCE_STUCK_LENGHT_MODIFIER = 10
-const HOOK_MIN_COLLISION_DISTANCE = 5
+const HOOK_MIN_COLLISION_DISTANCE = 3
 const MIN_COLLISION_DISTANCE = 1
 const HOOK_RETURN_MIN_COLLISION_DISTANCE = 6
-const CHAIN_SPACING_TOLLERANCE = 8
+const CHAIN_SPACING_TOLLERANCE = 4
 const MAX_CHAINS = 40
+
+const ALMOST_TENSIONED_FACTOR = 0.95
 # ------------------------------------------------
 
 # ------------------------------------------------
@@ -217,11 +219,13 @@ func _chain_process():
 				var corner_pos = Vector2(0, 0)
 				if len(possible_corners) > 0:
 					var z = 0
-					while z < len(possible_corners):
-						if (possible_corners[z] - chain_list[i].position).distance_to(Vector2(0, 0)) < CHAIN_SPACING_TOLLERANCE:
-							possible_corners.remove(z)
-						else:
-							z += 1
+					
+					if i != 0: 
+						while z < len(possible_corners):
+							if (possible_corners[z] - chain_list[i].position).distance_to(Vector2(0, 0)) < CHAIN_SPACING_TOLLERANCE:
+								possible_corners.remove(z)
+							else:
+								z += 1
 					
 					if len(possible_corners) > 0:
 						corner_pos = possible_corners[0]
@@ -354,6 +358,10 @@ func player_is_tensioned():
 	if total_chains > 0:
 		return get_total_length() >= max_length and player.velocity.dot(chain_list[total_chains - 1].cast_to) > 0
 	return false
+
+
+func player_is_almost_tensioned():
+	return get_total_length() >= ALMOST_TENSIONED_FACTOR * max_length
 
 
 # Returns the vector that represents the chain's deformation

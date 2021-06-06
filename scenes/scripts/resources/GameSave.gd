@@ -9,5 +9,9 @@ export var collectible_flags = {
 }
 
 export var world_flags = {
-	"test":false
+	"test": false
+}
+
+export var dialogue_flags = {
+	"test": false
 }

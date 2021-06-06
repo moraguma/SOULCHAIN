@@ -1,5 +1,7 @@
 extends Node2D
 
+onready var player = get_parent()
+
 onready var up_right = $UpRight
 onready var up_left = $UpLeft
 onready var down_right = $DownRight
@@ -14,15 +16,14 @@ onready var left_feet_hit_trigger = $LeftFeetHitTrigger
 onready var right_feet_hit_trigger = $RightFeetHitTrigger
 
 func _physics_process(delta):
-	var left_check = left_feet_hit_trigger.is_colliding()
-	var right_check = right_feet_hit_trigger.is_colliding()
-	
-	if left_check or right_check:
-		var moving_plat
-		if left_check:
-			left_feet_hit_trigger.get_collider().start_moving()
-		else:
-			right_feet_hit_trigger.get_collider().start_moving()
+	if left_feet_hit_trigger.is_colliding():
+		var body = left_feet_hit_trigger.get_collider()
+		if body.has_method("start_moving"):
+			body.start_moving()
+	elif right_feet_hit_trigger.is_colliding():
+		var body = right_feet_hit_trigger.get_collider()
+		if body.has_method("start_moving"):
+			body.start_moving()
 
 
 func is_on_wall():
@@ -60,3 +61,30 @@ func get_moving_plat_velocity():
 		total_velocity += i.get_transfer_velocity()
 	
 	return total_velocity
+
+
+# Returns distance to floor from feet
+func get_distance_to_floor():
+	var og_cast_to = left_feet.cast_to
+	
+	left_feet.cast_to = Vector2(0, 1000)
+	right_feet.cast_to = Vector2(0, 1000)
+	left_feet.force_raycast_update()
+	right_feet.force_raycast_update()
+	
+	var left_distance = 9999
+	var right_distance = 9999
+	
+	if left_feet.is_colliding():
+		left_distance = abs((left_feet.get_collision_point() - (player.position + position + left_feet.position))[1])
+	if right_feet.is_colliding():
+		right_distance = abs((right_feet.get_collision_point() - (player.position + position + right_feet.position))[1])
+	
+	var result = min(left_distance, right_distance)
+	
+	left_feet.cast_to = og_cast_to
+	right_feet.cast_to = og_cast_to
+	left_feet.force_raycast_update()
+	right_feet.force_raycast_update()
+	
+	return result

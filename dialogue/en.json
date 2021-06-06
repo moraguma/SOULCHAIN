@@ -1,0 +1,310 @@
+{
+    "type_layout": {
+        "1": {
+            "type": "dialogue",
+            "content": "This is what the character will say",
+            "speed": "This is the speed with which the line should be read, can be very slow, slow, medium or fast",
+            "sound": "Path to the sound the speaker will make. Defaults when left blank"
+        },
+        "2": {
+            "type": "choice",
+            "1": "This is the content of the first choice",
+            "skip1": "This is where the dialogue should go if choice 1 is selected",
+            "2": "This is the content of the second choice",
+            "skip2": "This is where the dialogue should go if choice 2 is selected"
+        },
+        "3": {
+            "type": "flag_updater",
+            "flag": "this is the name of the flag that should be updated. Value is the value that flag will assume",
+            "value": true
+        },
+        "4": {
+            "type": "flag_checker",
+            "flag": "this is the name of the flag that will be checked",
+            "skip_if_true": "this is where the dialogue should go if the flag is true",
+            "skip_if_false": "this is where the dialogue should go it the flag is false"
+        },
+        "5": {
+            "type": "skipper",
+            "skip_to": "this is where the dialogue should skip to. You can skip to -1 to end the dialogue"
+        },
+        "6": {
+            "type": "speaker_changer",
+            "speaker": "this is the speaker that the dialogue should transfer to. self refers to the node speaking, player refers to the player. Use path otherwise"
+        }
+    },
+
+    "empty_type_layout": {
+        "1": {
+            "type": "dialogue",
+            "content": "",
+            "speed": "medium",
+            "sound": ""
+        },
+        "2": {
+            "type": "choice",
+            "1": "",
+            "skip1": "",
+            "2": "",
+            "skip2": ""
+        },
+        "3": {
+            "type": "flag_updater",
+            "flag": "",
+            "value": true
+        },
+        "4": {
+            "type": "flag_checker",
+            "flag": "",
+            "skip_if_true": "",
+            "skip_if_false": ""
+        },
+        "5": {
+            "type": "skipper",
+            "skip_to": ""
+        },
+        "6": {
+            "type": "speaker_changer",
+            "speaker": ""
+        }
+    },
+
+    "colors": {
+        "green": "#90d23b"
+    },
+
+    "fallback": {
+        "1": {
+            "type": "dialogue",
+            "content": "It looks like someone forgot to put dialogue here!",
+            "speed": "medium",
+            "speaker": "",
+            "sound": ""
+        },
+        "2": {
+            "type": "dialogue",
+            "content": "This is not intended! Please contact the dev!",
+            "speed": "medium",
+            "speaker": "",
+            "sound": ""
+        }
+    },
+
+    "test_dialogue": {
+        "1": {
+            "type": "flag_checker",
+            "flag": "test_dialogue_completed",
+            "skip_if_true": "7",
+            "skip_if_false": "2"
+        },
+        "2": {
+            "type": "dialogue",
+            "content": "Hey, this is the dialogue system!",
+            "speed": "medium",
+            "sound": ""
+        },
+        "3": {
+            "type": "dialogue",
+            "content": "It's nice to talk to you!",
+            "speed": "medium",
+            "sound": ""
+        },
+        "4": {
+            "type": "dialogue",
+            "content": "I'll see you around!",
+            "speed": "medium",
+            "sound": ""
+        },
+        "5": {
+            "type":"flag_updater",
+            "flag": "test_dialogue_completed",
+            "value": true
+        },
+        "6": {
+            "type":"skipper",
+            "skip_to": "-1"
+        },
+        "7": {
+            "type": "dialogue",
+            "content": "It seems you're visiting this dialogue option again!",
+            "speed": "medium",
+            "sound": ""
+        },
+        "8": {
+            "type": "dialogue",
+            "content": "Unfortunately, I don't have a whole lot more to say!",
+            "speed": "medium",
+            "sound": ""
+        }, 
+        "9": {
+            "type": "dialogue",
+            "content": "Well",
+            "speed": "medium",
+            "sound": ""
+        },
+        "10": {
+            "type": "dialogue",
+            "content": "Bye",
+            "speed": "fast",
+            "sound": ""
+        }
+    },
+
+    "choice_test": {
+        "1": {
+            "type": "dialogue",
+            "content": "Ok, we're gonna test [color=#90d23b][b]choices[/b][/color] now",
+            "speed": "medium",
+            "sound": ""
+        },
+        "2": {
+            "type": "dialogue",
+            "content": "Are you ready?",
+            "speed": "medium",
+            "sound": ""
+        },
+        "3": {
+            "type": "speaker_changer",
+            "speaker": "player"
+        },
+        "4": {
+            "type": "choice",
+            "1": "Yes",
+            "2": "[rainbow freq=3 sat=1 val=50][wave freq=10 amp=20]No",
+            "skip1": "CHOSE_YES",
+            "skip2": "CHOSE_NO"
+        },
+        "CHOSE_YES": {
+            "type": "skipper",
+            "skip_to": "100"
+        },
+        "CHOSE_NO": {
+            "type": "skipper",
+            "skip_to": "200"
+        },
+        "100": {
+            "type": "speaker_changer",
+            "speaker": "self"
+        },
+        "101": {
+            "type": "dialogue",
+            "content": "Ha! Good, looks like everything's in order",
+            "speed": "medium",
+            "sound": ""
+        },
+        "102": {
+            "type": "dialogue",
+            "content": "SORRY FOR YELLING BUT I ALSO WANNA TEST WHAT IT LOOKS LIKE",
+            "speed": "medium",
+            "sound": ""
+        },
+        "103": {
+            "type": "dialogue",
+            "content": "ALSO LIKE, YOU KNOW, WHAT IT LOOKS LIKE IF I PUT A WHOLE LOT OF TEXT IN THE SAME DIALOGUE BOX AT ONCE. I KNOW IT'S GONNA STRETCH AND I REALLY DON'T WANT THAT EFFECT IN THE FULL GAME BUT LIKE JUST TO MAKE SURE I THINK IT WOULD BE PRETTY COOL IF WE COULD GET THAT GOING IN LIKE A TESTING SCENARIO IF YOU KNOW WHAT I MEAN?? YOU KNOW????? Á",
+            "speed": "medium",
+            "sound": ""
+        },
+        "200": {
+            "type": "speaker_changer",
+            "speaker": "self"
+        },
+        "201": {
+            "type": "dialogue",
+            "content": "[shake rate=18 level=12]Very funny",
+            "speed": "slow",
+            "sound": ""
+        }
+    },
+
+    "alpha_start": {
+        "1": {
+            "type": "dialogue",
+            "content": "Welcome to the [wave freq=10 amp=20]funny little pre alpha build[/wave] of [shake rate=18 level=12]Soulchain!",
+            "speed": "medium",
+            "sound": ""
+        },
+
+        "2": {
+            "type": "dialogue",
+            "content": "Tutorializing agents are not yet in place, so I'll just tell what you're [wave freq=10 amp=20]meant[/wave] to be seeing",
+            "speed": "medium",
+            "sound": ""
+        },
+
+        "3": {
+            "type": "dialogue",
+            "content": "This part of the game is about learning basic movement, use WASD to move and space bar to jump",
+            "speed": "medium",
+            "sound": ""
+        }
+    },
+
+    "alpha_swing": {
+        "1": {
+            "type": "dialogue",
+            "content": "This is where you're meant to learn about the [wave freq=10 amp=20]swinging mechanic!",
+            "speed": "medium",
+            "sound": ""
+        },
+
+        "2": {
+            "type": "dialogue",
+            "content": "This should happen in a cutscene, but since those aren't ready...",
+            "speed": "slow",
+            "sound": ""
+        },
+
+        "3": {
+            "type": "dialogue",
+            "content": "Just jump down this hole and hit the green surface with your hook with H once you're close to the bottom",
+            "speed": "medium",
+            "sound": ""
+        },
+
+        "4": {
+            "type": "dialogue",
+            "content": "[shake rate=18 level=10]Also don't go through any doors that lead to the right for now please",
+            "speed": "medium",
+            "sound": ""
+        },
+
+        "5": {
+            "type": "dialogue",
+            "content": "[wave freq=10 amp=20]Don't fall!",
+            "speed": "medium",
+            "sound": ""
+        }
+    },
+
+    "alpha_burst": {
+        "1": {
+            "type": "dialogue",
+            "content": "This is where you're meant to learn about the [wave freq=10 amp=20]burst",
+            "speed": "medium",
+            "sound": ""
+        },
+
+        "2": {
+            "type": "dialogue",
+            "content": "Press H once you're already hooked to receive a speed burst",
+            "speed": "medium",
+            "sound": ""
+        }
+    },
+
+    "alpha_end": {
+        "1": {
+            "type": "dialogue",
+            "content": "This is the end of the alpha! Thanks for playing!",
+            "speed": "medium",
+            "sound": ""
+        },
+
+        "2": {
+            "type": "dialogue",
+            "content": "There are currently 3 collectibles in the map. You can go back to look for them if you want!",
+            "speed": "medium",
+            "sound": ""
+        }
+    }
+}

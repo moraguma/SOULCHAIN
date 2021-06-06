@@ -9,6 +9,7 @@ export var max_y = 216
 func initialize_transitions():
 	for node in $Transitions.get_children():
 		node.Transition = load(node.transition_path)
+		node.monitorable = true
 		node.monitoring = true
 
 

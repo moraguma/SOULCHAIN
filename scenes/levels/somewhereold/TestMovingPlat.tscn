@@ -34,7 +34,6 @@ script = ExtResource( 8 )
 max_x = 768
 
 [node name="UniformMovingPlatform" parent="." instance=ExtResource( 12 )]
-position = Vector2( 40, 40 )
 
 [node name="Tiles" parent="UniformMovingPlatform" index="0"]
 position = Vector2( -112, 0 )

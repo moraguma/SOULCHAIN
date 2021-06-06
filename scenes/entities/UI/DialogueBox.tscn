@@ -1,0 +1,72 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://resources/themes/DialogueText.tres" type="Theme" id=1]
+[ext_resource path="res://scenes/scripts/DialogueBox.gd" type="Script" id=2]
+[ext_resource path="res://scenes/entities/UI/SelectionNode.tscn" type="PackedScene" id=3]
+[ext_resource path="res://scenes/scripts/tools/texteffects/SurgeEffect.gd" type="Script" id=4]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+
+
+uniform float shake_strength_horizontal = 0.7;
+uniform float shake_strength_vertical = 0.5;
+
+
+void vertex() {
+	VERTEX.x += cos((TIME + VERTEX.x + VERTEX.y) * 5.0) * shake_strength_horizontal;
+	VERTEX.y += sin(TIME + VERTEX.x + VERTEX.y) * shake_strength_vertical;
+}"
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = SubResource( 1 )
+shader_param/shake_strength_horizontal = 0.7
+shader_param/shake_strength_vertical = 0.5
+
+[sub_resource type="RichTextEffect" id=3]
+script = ExtResource( 4 )
+
+[node name="DialogueBox" type="Node2D" groups=[
+"Dialogue",
+]]
+script = ExtResource( 2 )
+SelectionNode = ExtResource( 3 )
+
+[node name="Connector" type="Polygon2D" parent="."]
+material = SubResource( 2 )
+color = Color( 0, 0, 0, 1 )
+antialiased = true
+polygon = PoolVector2Array( 0, 0, -64, -128, 64, -128 )
+
+[node name="Box" type="Polygon2D" parent="."]
+material = SubResource( 2 )
+color = Color( 0, 0, 0, 1 )
+polygon = PoolVector2Array( -42, -24, 42, -24, 51, -25, 59, -26, 66, -27, 72, -28, 77, -29, 81, -30, 84, -31, 86, -32, 87, -33, 88, -35, 89, -38, 90, -42, 91, -47, 92, -53, 93, -60, 94, -68, 95, -77, 95, -87, 94, -96, 93, -104, 92, -111, 91, -117, 90, -122, 89, -126, 88, -129, 87, -131, 86, -132, 84, -133, 81, -134, 77, -135, 72, -136, 66, -137, 59, -138, 51, -139, 42, -140, -42, -140, -51, -139, -59, -138, -66, -137, -72, -136, -77, -135, -81, -134, -84, -133, -86, -132, -87, -131, -88, -129, -89, -126, -90, -122, -91, -117, -92, -111, -93, -104, -94, -96, -95, -87, -95, -77, -94, -68, -93, -60, -92, -53, -91, -47, -90, -42, -89, -38, -88, -35, -87, -33, -86, -32, -84, -31, -81, -30, -77, -29, -72, -28, -66, -27, -59, -26, -51, -25 )
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+margin_left = -262.0
+margin_top = -101.0
+margin_right = 262.0
+margin_bottom = -49.0
+rect_clip_content = false
+theme = ExtResource( 1 )
+bbcode_enabled = true
+bbcode_text = "[center]H"
+text = "H"
+fit_content_height = true
+scroll_active = false
+custom_effects = [ SubResource( 3 ) ]
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="TextShowTween" type="Tween" parent="."]
+
+[node name="ScaleTween" type="Tween" parent="."]
+
+[node name="ConnectorScaleTween" type="Tween" parent="."]
+
+[node name="PositionTween" type="Tween" parent="."]
+
+[node name="Timer" type="Timer" parent="."]

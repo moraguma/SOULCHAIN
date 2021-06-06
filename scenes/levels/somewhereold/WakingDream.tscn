@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://resources/tilemaps/somewhereold/spikes.tres" type="TileSet" id=1]
 [ext_resource path="res://resources/tilemaps/somewhereold/tiles.tres" type="TileSet" id=2]
@@ -11,6 +11,7 @@
 [ext_resource path="res://LevelBase.gd" type="Script" id=9]
 [ext_resource path="res://resources/tilemaps/somewhereold/brickwalls.tres" type="TileSet" id=10]
 [ext_resource path="res://resources/tilemaps/somewhereold/platforms.tres" type="TileSet" id=11]
+[ext_resource path="res://scenes/entities/visual/somewhereold/LightMount.tscn" type="PackedScene" id=12]
 
 [node name="Base" type="Node2D"]
 script = ExtResource( 9 )
@@ -96,6 +97,8 @@ facing_right_on_respawn = false
 [node name="SpawnPoint" parent="Transitions/TransitionAreaRight" index="1"]
 position = Vector2( -24, 16 )
 
-[editable path="Transitions/TransitionAreaLeft"]
+[node name="LightMount" parent="." instance=ExtResource( 12 )]
+position = Vector2( 192, 24 )
 
+[editable path="Transitions/TransitionAreaLeft"]
 [editable path="Transitions/TransitionAreaRight"]
